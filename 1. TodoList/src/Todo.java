@@ -10,8 +10,7 @@ public class Todo {
 	// * , **, ***
 	String star;
 
-	Todo(int key, LocalDateTime localDateTime, String title, String comment, String star) {
-		this.key = key;
+	Todo(LocalDateTime localDateTime, String title, String comment, String star) {
 		this.localDateTime = localDateTime;
 		this.title = title;
 		this.comment = comment;
@@ -20,7 +19,7 @@ public class Todo {
 
 	@Override
 	public String toString() {
-		return "번호 : " + getKey() + "\n날짜" + getLocalDateTime() + "\n제목 : " + getTitle() + "\n내용 : " + getComment()
+		return "번호 : " + getKey() + "\n날짜 : " + getLocalDateTime() + "\n제목 : " + getTitle() + "\n내용 : " + getComment()
 				+ "\n실행 유무 : " + isCheck() + "\n중요도 : " + getStar();
 	}
 

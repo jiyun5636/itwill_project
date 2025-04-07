@@ -16,12 +16,14 @@ public class Main {
 			System.out.println("3. todo 삭제하기");
 			System.out.println("4. todo 검색하기");
 			System.out.println("5. todo 완료/미완료 체크하기");
-			System.out.println("6. 종료하기");
+			System.out.println("6. todo 전체보기");
+			System.out.println("7. 종료하기");
 
 			System.out.print(">> 원하시는 번호를 입력해주세요 : ");
 			num = sc.nextInt();
 
-			if (num == 6) {
+			if (num == 7) {
+				System.out.println("종료되었습니다.");
 				break;
 			}else {
 				todoList.selectMenu(num);
