@@ -24,11 +24,12 @@ public class Main {
 
 			if (num == 7) {
 				System.out.println("종료되었습니다.");
+				todoList.saveToFile();
 				break;
-			}else {
+			} else {
 				todoList.selectMenu(num);
 			}
 		}
-		
+
 	}
 }

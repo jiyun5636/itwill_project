@@ -1,3 +1,4 @@
+import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -5,10 +6,17 @@ import java.util.Scanner;
 
 public class TodoList {
 
+	private static final String FILE_NAME = "todo.txt";
 	LocalDateTime localDateTime;
 	List<Todo> list = new ArrayList<Todo>();
 	Scanner intSc = new Scanner(System.in);
 	Scanner strSc = new Scanner(System.in);
+
+	TodoFilter filter = new TodoFilter();
+
+	public TodoList() {
+		loadFromFile();
+	}
 
 	public void selectMenu(int num) {
 		switch (num) {
@@ -23,14 +31,16 @@ public class TodoList {
 		case 3:
 			deleteTodo();
 			break;
-			
+
+		case 4:
+			filter.search(list);
+			break;
 		case 5:
 			checkTodo();
 			break;
 		case 6:
 			showAllList();
 			break;
-	
 
 		default:
 
@@ -44,16 +54,15 @@ public class TodoList {
 		String comment = intSc.nextLine();
 		System.out.print("중요도를 입력해주세요 - * , ** , *** : ");
 		String star = intSc.nextLine();
-		
 
 		Todo todo = new Todo(localDateTime.now(), title, comment, star);
-		
+
 		todo.setCheck(false); // Todo 유무 기본값은 false
 
 		list.add(todo);
-		
-		//key값은 리스트 인덱스 값
-		int key=list.indexOf(todo);
+
+		// key값은 리스트 인덱스 값
+		int key = list.indexOf(todo);
 		todo.setKey(key);
 
 		System.out.println("todo가 생성되었습니다. ");
@@ -112,10 +121,10 @@ public class TodoList {
 				getOneList(i);
 				System.out.println("==============");
 				System.out.println("1. 완료  2. 미완료");
-				int check=intSc.nextInt();
-				if(check==1) {
+				int check = intSc.nextInt();
+				if (check == 1) {
 					list.get(i).setCheck(true);
-				}else {
+				} else {
 					list.get(i).setCheck(false);
 				}
 				getOneList(num);
@@ -130,12 +139,59 @@ public class TodoList {
 			System.out.println("==============");
 		}
 	}
-	
+
 	public void getOneList(int num) {
 		for (int i = 0; i < list.size(); i++) {
-			if(num==i) {
+			if (num == i) {
 				System.out.println(list.get(i).toString());
 			}
+		}
+	}
+
+	public void loadFromFile() {
+		File file = new File(FILE_NAME);
+		if (!file.exists()) {
+			System.out.println("[안내] 저장된 todo 파일이 없습니다.");
+			return;
+		}
+
+		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				String[] parts = line.split("##");
+				if (parts.length < 6)
+					continue;
+
+				LocalDateTime dateTime = LocalDateTime.parse(parts[0]);
+				String title = parts[1];
+				String comment = parts[2];
+				String star = parts[3];
+				boolean check = Boolean.parseBoolean(parts[4]);
+				int key = Integer.parseInt(parts[5]);
+
+				Todo todo = new Todo(dateTime, title, comment, star);
+				todo.setCheck(check);
+				todo.setKey(key);
+
+				list.add(todo);
+			}
+			System.out.println("[불러오기 완료] " + list.size() + "개의 항목을 불러왔습니다.");
+		} catch (IOException e) {
+			System.out.println("오류 발생: " + e.getMessage());
+		}
+	}
+
+	public void saveToFile() {
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_NAME))) {
+			for (Todo todo : list) {
+				String line = todo.getLocalDateTime().toString() + "##" + todo.getTitle() + "##" + todo.getComment()
+						+ "##" + todo.getStar() + "##" + todo.isCheck() + "##" + todo.getKey();
+				bw.write(line);
+				bw.newLine();
+			}
+			System.out.println("[저장 완료] todo.txt에 저장되었습니다.");
+		} catch (IOException e) {
+			System.out.println("오류 발생: " + e.getMessage());
 		}
 	}
 }
