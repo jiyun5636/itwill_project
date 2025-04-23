@@ -50,4 +50,6 @@ public class UserDAO {
 		}
 		return result;
 	}
+	//아이디 중복체크
+	//로그인
 }
