@@ -6,6 +6,12 @@ public class LoginUserInfo {
 	private String nickName;
 	private String password;
 	
+	public int getKey() {
+		return key;
+	}
+	public void setKey(int key) {
+		this.key = key;
+	}
 	public String getName() {
 		return name;
 	}

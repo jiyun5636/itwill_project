@@ -91,14 +91,26 @@ public class UserService {
 			String passwordString = strSc.nextLine();
 
 			// DAO 작성 필요
+			//~().getnickname
 		}
 	}
 	
 	public void UpdateUser() {
-		System.out.println("닉네임을 입력하세요");
+		System.out.print("닉네임을 입력하세요");
 		String nickName = strSc.nextLine();
 
-		System.out.println("비밀번호를 입력하세요");
+		System.out.print("비밀번호를 입력하세요");
 		String passwordString = strSc.nextLine();
+		
+		//signIn에서 쓴 dao가 잇다면
+		System.out.println("변경할 이름 : ");
+		String nameUpdate = strSc.nextLine();
+		
+		System.out.println("변경할 닉네임 : ");
+		String nickNameUpdate = strSc.nextLine();
+		
+		System.out.println("변경할 비밀번호 : ");
+		String passwordUpdate = strSc.nextLine();
+		
 	}
 }
