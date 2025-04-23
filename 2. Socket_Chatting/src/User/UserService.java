@@ -42,9 +42,12 @@ public class UserService {
 		case 7:
 			logOut();
 			break;
+			
+		case 8:
+			System.exit(0);
 
 		default:
-
+			System.out.println("잘못된 번호를 입력하였습니다.");
 		}
 	}
 
@@ -75,7 +78,7 @@ public class UserService {
 			passwordCheck = strSc.nextLine();
 
 			if (!password.equals(passwordCheck)) {
-				System.out.println("비밀번호를 잘못 입력하셨습니다.");
+				System.out.println("비밀번호를 잘못 입력하였습니다.");
 			} else {
 				break;
 			}
@@ -136,7 +139,14 @@ public class UserService {
 
 				// 가져온 정보 update
 				loginUser.updateUserInfo(nameUpdate, nickNameUpdate, passwordUpdate);
+				
 				userDAO.UpdateUser(loginUser, loginUser.getKey());
+				System.out.println("사용자 정보를 수정하였습니다.");
+				System.out.println("==== 수정된 사용자 정보 ====");
+				System.out.println("이름 : " + loginUser.getName());
+				System.out.println("닉네임 : " + loginUser.getNickName());
+				System.out.println("비밀번호 : " + loginUser.getPassword());
+				System.out.println("=================");
 				break;
 			case 2:
 				System.out.println("탈퇴하시겠습니다?");
@@ -144,27 +154,26 @@ public class UserService {
 				int check = intSc.nextInt();
 
 				if (check == 1) {
-					// 추가 필요
+					userDAO.deleteUser(loginUser.getKey());
+					loginUser.clearUserInfo();
+					System.out.println("탈퇴되었습니다.");
+				}else {
+					System.out.println("잘못된 번호를 입력하셨습니다");
 				}
 				break;
 			}
 
-			System.out.println("사용자 정보를 수정하였습니다.");
-			System.out.println("==== 수정된 사용자 정보 ====");
-			System.out.println("이름 : " + loginUser.getName());
-			System.out.println("닉네임 : " + loginUser.getNickName());
-			System.out.println("비밀번호 : " + loginUser.getPassword());
-			System.out.println("=================");
 		} else {
 			System.out.println("로그인이 필요합니다.");
 		}
 	}
 
 	public void logOut() {
-
-	}
-
-	public void deleteUser() {
-
+		if (loginUser.getNickName() != null) {
+			loginUser.clearUserInfo();
+			System.out.println("로그아웃을 성공했습니다");
+		}else {
+			System.out.println("로그인이 되어있지 않습니다.");
+		}
 	}
 }
