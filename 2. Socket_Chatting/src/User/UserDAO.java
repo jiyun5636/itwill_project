@@ -5,10 +5,10 @@ import jdbcUtil.Jdbc_Util;
 
 //DB 서비스
 public class UserDAO {
-	private static final String DRIVER = "oracle.jdbc.OracleDriver";
-	private static final String URL = "jdbc:oracle:thin:@localhost:1521:xe";
-	private static final String USER = "ITWILL";
-	private static final String PASSWORD = "itwillpw";
+//	private static final String DRIVER = "oracle.jdbc.OracleDriver";
+//	private static final String URL = "jdbc:oracle:thin:@localhost:1521:xe";
+//	private static final String USER = "ITWILL";
+//	private static final String PASSWORD = "itwillpw";
 
 	// int로 선언한 이유 : 행의 갯수를 반환하기 위해
 	public int insert(User user) {
@@ -49,6 +49,32 @@ public class UserDAO {
 		return result;
 	}
 	// 아이디 중복체크
+
+	public boolean isNickNameDuplicate(String nickName) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		boolean isNNDuplicate = false;
+
+		try {
+			conn = Jdbc_Util.getConnection();
+			String sql = "";
+			sql += "SELECT * FROM MEMEBER WHERE NICKNAME = ?";
+
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, nickName);
+			rs = pstmt.executeQuery();
+
+			if (rs.next()) {
+				isNNDuplicate = rs.getInt(1) > 0;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			Jdbc_Util.close(conn, pstmt, rs);
+		}
+		return isNNDuplicate;
+	}
 
 	// 로그인
 
@@ -91,4 +117,61 @@ public class UserDAO {
 
 	}
 
+	public boolean deleteUser(int userId) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		boolean isDelete = false;
+
+		try {
+			conn = Jdbc_Util.getConnection();
+			String sql = "";
+			sql += "DELETE FROM MEMBER WHERE ID = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, userId);
+
+			int result = pstmt.executeUpdate();
+			if (result > 0) {
+				isDelete = true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			Jdbc_Util.close(conn, pstmt, rs);
+		}
+
+		return isDelete;
+	}
+
+	public boolean UpdateUser(User user, int userId) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		boolean isUpdate = false;
+
+		try {
+			conn = Jdbc_Util.getConnection();
+			String sql = "";
+			sql += "UPDATE MEMBER ";
+			sql += "SET NAME = ?, ";
+			sql += "SET NICKNAME = ?, ";
+			sql += "SET PW = ?, ";
+			sql += "WHERE ID = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, user.getName());
+			pstmt.setString(2, user.getNickName());
+			pstmt.setString(3, user.getPassword());
+			pstmt.setInt(4, userId);
+
+			int result = pstmt.executeUpdate();
+			if (result > 0) {
+				isUpdate = true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			Jdbc_Util.close(conn, pstmt, null);
+		}
+
+		return isUpdate;
+	}
 }
