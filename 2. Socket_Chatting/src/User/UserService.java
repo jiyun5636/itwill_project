@@ -6,7 +6,7 @@ public class UserService {
 	Scanner intSc = new Scanner(System.in);
 	Scanner strSc = new Scanner(System.in);
 	UserDAO userDAO = new UserDAO();
-	User user=new User();
+	User user = new User();
 	LoginUserInfo loginUser = LoginUserInfo.getInstance();
 
 	public void selectMenu(int num) {
@@ -59,11 +59,10 @@ public class UserService {
 		while (true) {
 			System.out.print("닉네임을 입력하세요: ");
 			nickName = strSc.nextLine();
-			//중복처리 추가 필요
-			if(userDAO.isNickNameDuplicate(nickName)) {
+			// 중복처리 추가 필요
+			if (userDAO.isNickNameDuplicate(nickName)) {
 				System.out.println("이미 존재하는 닉네임입니다. 다시 입력하세요.");
-			}
-			else {
+			} else {
 				break;
 			}
 		}
@@ -92,16 +91,16 @@ public class UserService {
 	public void signIn() {
 		if (loginUser.getNickName() != null) {
 			System.out.println("이미 로그인되어있습니다.");
-		}else {
+		} else {
 			while (true) {
 				System.out.println("닉네임을 입력하세요");
 				String nickName = strSc.nextLine();
-				
+
 				System.out.println("비밀번호를 입력하세요");
 				String password = strSc.nextLine();
-				
+
 				Boolean isLogin = userDAO.login(nickName, password);
-				
+
 				if (!isLogin) {
 					System.out.println("잘못된 정보를 입력하였습니다.");
 				} else {
@@ -137,7 +136,7 @@ public class UserService {
 
 				// 가져온 정보 update
 				loginUser.updateUserInfo(nameUpdate, nickNameUpdate, passwordUpdate);
-				userDAO.UpdateUser(user, loginUser.getKey());
+				userDAO.UpdateUser(loginUser, loginUser.getKey());
 				break;
 			case 2:
 				System.out.println("탈퇴하시겠습니다?");

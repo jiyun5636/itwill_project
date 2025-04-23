@@ -117,7 +117,7 @@ public class UserDAO {
 
 	}
 
-	//유저삭제
+	// 유저삭제
 	public boolean deleteUser(int userId) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -144,7 +144,7 @@ public class UserDAO {
 		return isDelete;
 	}
 
-	public boolean UpdateUser(User user, int userId) {
+	public boolean UpdateUser(LoginUserInfo loginUserInfo, int userId) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		boolean isUpdate = false;
@@ -158,12 +158,12 @@ public class UserDAO {
 			sql += "PW = ? ";
 			sql += "WHERE ID = ?";
 			pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, user.getName());
-			pstmt.setString(2, user.getNickName());
-			pstmt.setString(3, user.getPassword());
-			pstmt.setInt(4, userId);
-			
-			System.out.println(user.toString());
+			pstmt.setString(1, loginUserInfo.getName());
+			pstmt.setString(2, loginUserInfo.getNickName());
+			pstmt.setString(3, loginUserInfo.getPassword());
+			pstmt.setInt(4, loginUserInfo.getKey());
+
+			System.out.println(loginUserInfo.toString());
 
 			int result = pstmt.executeUpdate();
 			if (result > 0) {
