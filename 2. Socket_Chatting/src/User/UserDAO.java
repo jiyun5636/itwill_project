@@ -178,4 +178,36 @@ public class UserDAO {
 
 		return isUpdate;
 	}
+
+	public int findUserIdByName(String NickName) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		int userId = -1;
+		ResultSet rs = null;
+
+		try {
+			conn = Jdbc_Util.getConnection();
+			String sql = "";
+			sql += "SELECT ID ";
+			sql += "FROM MEMBER ";
+			sql += "WHERE NICKNAME = ?";
+
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, NickName);
+			rs = pstmt.executeQuery();
+
+			if (rs.next()) {
+				userId = rs.getInt("ID");
+
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			Jdbc_Util.close(conn, pstmt, rs);
+		}
+
+		return userId;
+
+	}
 }
