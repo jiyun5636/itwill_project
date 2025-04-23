@@ -4,7 +4,10 @@
 
 ▪️ JAVA
 
-🟧
+🟧 Chatting
+
+▪️JAVA, ORACLE_DB
+
 🟨
 🟩
 🟦
