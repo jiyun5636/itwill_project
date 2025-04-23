@@ -17,12 +17,13 @@ public class Main {
 			System.out.println("4. 개인 채팅방 생성");
 			System.out.println("5. 단체 채팅방 생성");
 			System.out.println("6. 회원정보 수정"); // -> 탈퇴
-			System.out.println("7. 종료하기");
+			System.out.println("7. 로그아웃");
+			System.out.println("8. 종료");
 
 			System.out.print(">> 원하시는 번호를 입력해주세요 : ");
 			num = sc.nextInt();
 
-			if (num == 7) {
+			if (num == 8) {
 				System.out.println("종료되었습니다.");
 				break;
 			} else {

@@ -16,7 +16,11 @@ public class LoginUserInfo {
 	}
 
 	public void setUserInfo(int key, String name, String nickName, String password) {
-		this.key = key;
+		this.name = name;
+		this.nickName = nickName;
+		this.password = password;
+	}
+	public void updateUserInfo(String name, String nickName, String password) {
 		this.name = name;
 		this.nickName = nickName;
 		this.password = password;

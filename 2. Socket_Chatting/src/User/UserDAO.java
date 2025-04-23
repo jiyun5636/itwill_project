@@ -59,7 +59,7 @@ public class UserDAO {
 		try {
 			conn = Jdbc_Util.getConnection();
 			String sql = "";
-			sql += "SELECT * FROM MEMEBER WHERE NICKNAME = ?";
+			sql += "SELECT * FROM MEMBER WHERE NICKNAME = ?";
 
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, nickName);
@@ -117,6 +117,7 @@ public class UserDAO {
 
 	}
 
+	//유저삭제
 	public boolean deleteUser(int userId) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -153,23 +154,26 @@ public class UserDAO {
 			String sql = "";
 			sql += "UPDATE MEMBER ";
 			sql += "SET NAME = ?, ";
-			sql += "SET NICKNAME = ?, ";
-			sql += "SET PW = ?, ";
+			sql += "NICKNAME = ?, ";
+			sql += "PW = ? ";
 			sql += "WHERE ID = ?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, user.getName());
 			pstmt.setString(2, user.getNickName());
 			pstmt.setString(3, user.getPassword());
 			pstmt.setInt(4, userId);
+			
+			System.out.println(user.toString());
 
 			int result = pstmt.executeUpdate();
 			if (result > 0) {
+				System.out.println(result);
 				isUpdate = true;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			Jdbc_Util.close(conn, pstmt, null);
+			Jdbc_Util.close(conn, pstmt);
 		}
 
 		return isUpdate;
