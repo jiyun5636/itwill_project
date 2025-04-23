@@ -6,10 +6,6 @@ public class User {
 	private String nickName;
 	private String password;
 	
-	@Override
-	public String toString() {
-		return "User [key=" + key + ", name=" + name + ", nickName=" + nickName + ", password=" + password + "]";
-	}
 	User(){
 		
 	}
@@ -46,5 +42,9 @@ public class User {
 		this.password = password;
 	}
 	
+	@Override
+	public String toString() {
+		return "User [key=" + key + ", name=" + name + ", nickName=" + nickName + ", password=" + password + "]";
+	}
 	
 }
