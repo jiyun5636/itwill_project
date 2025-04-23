@@ -1,0 +1,9 @@
+CREATE USER ITWILL IDENTIFIED BY itwillpw;
+
+GRANT CREATE SESSION TO ITWILL;         -- 접속 권한
+GRANT CREATE TABLE TO ITWILL;           -- 테이블 생성 권한
+GRANT CREATE VIEW TO ITWILL;            -- 뷰 생성 권한 (필요 시)
+GRANT CREATE PROCEDURE TO ITWILL;       -- 프로시저 생성 권한 (필요 시)
+
+
+ALTER USER "ITWILL" QUOTA UNLIMITED ON "SYSTEM";
