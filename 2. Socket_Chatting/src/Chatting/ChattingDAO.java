@@ -5,115 +5,133 @@ import java.sql.*;
 
 public class ChattingDAO {
 
-	public boolean createChatRoomandList(int inviterId, int inviteeId, String roomName) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		boolean isCreated = false;
+	public int createChatRoomAndList(int inviterId, int inviteeId, String roomName) {
+	    Connection conn = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+	    int chattingRoomId = -1;  // 생성된 방 ID를 담을 변수
 
-		try {
-			conn = Jdbc_Util.getConnection();
-			conn.setAutoCommit(false);
+	    try {
+	        conn = Jdbc_Util.getConnection();
+	        conn.setAutoCommit(false);
 
-			// 채팅방 생성 쿼리
-			String sql = "";
-			sql += "INSERT INTO CHATTINGROOM ";
-			sql += "(CHATTINGROOM_ID, ROOMNAME, UNAME1, UNAME2) ";
-			sql += "VALUES (CHATTINGROOM_ID.NEXTVAL, ?, ?, ?)";
+	        // 1) 채팅방 생성
+	        String sql = ""
+	            + "INSERT INTO CHATTINGROOM "
+	            + "  (CHATTINGROOM_ID, ROOMNAME, UNAME1, UNAME2) "
+	            + "VALUES (CHATTINGROOM_ID.NEXTVAL, ?, ?, ?)";
+	        pstmt = conn.prepareStatement(sql, new String[] { "CHATTINGROOM_ID" });
+	        pstmt.setString(1, roomName);
+	        pstmt.setInt(2, inviterId);
+	        pstmt.setInt(3, inviteeId);
+	        pstmt.executeUpdate();
 
-			pstmt = conn.prepareStatement(sql, new String[] { "CHATTINGROOM_ID" });
-			pstmt.setString(1, roomName);
-			pstmt.setInt(2, inviterId);
-			pstmt.setInt(3, inviteeId);
-			pstmt.executeUpdate();
+	        // 생성된 키 조회
+	        rs = pstmt.getGeneratedKeys();
+	        if (rs.next()) {
+	            chattingRoomId = rs.getInt(1);
+	        }
+	        rs.close();
+	        pstmt.close();
 
-			rs = pstmt.getGeneratedKeys();
-			int chattingRoomId = -1;
-			if (rs.next()) {
-				chattingRoomId = rs.getInt(1);
-			}
+	        // 2) 채팅 리스트에 등록
+	        String listSql = ""
+	            + "INSERT INTO CHATTINGLIST "
+	            + "  (CHATTINGLIST_ID, CHATTINGROOM_ID, UNAME1, UNAME2) "
+	            + "VALUES (CHATTINGLIST_ID.NEXTVAL, ?, ?, ?)";
+	        pstmt = conn.prepareStatement(listSql);
+	        pstmt.setInt(1, chattingRoomId);
+	        pstmt.setInt(2, inviterId);
+	        pstmt.setInt(3, inviteeId);
+	        pstmt.executeUpdate();
 
-			rs.close();
-			pstmt.close();
+	        conn.commit();
+	        System.out.println(":: 채팅방이 생성되었습니다. 방 번호: " 
+	                            + chattingRoomId 
+	                            + " | 채팅방 상대: " + inviteeId);
 
-			// 채팅 리스트 생성
+	    } catch (Exception e) {
+	        try {
+	            if (conn != null) conn.rollback();
+	        } catch (SQLException ex) {
+	            ex.printStackTrace();
+	        }
+	        e.printStackTrace();
+	        chattingRoomId = -1;  // 실패 시 -1 반환
+	    } finally {
+	        Jdbc_Util.close(conn, pstmt, rs);
+	    }
 
-			String listSql = "";
-			listSql += "INSERT INTO CHATTINGLIST ";
-			listSql += "(CHATTINGLIST_ID, CHATTINGROOM_ID , UNAME1 , UNAME2) ";
-			listSql += "VALUES (CHATTINGLIST_ID.NEXTVAL , ? , ? , ? )";
-
-			pstmt = conn.prepareStatement(listSql);
-			pstmt.setInt(1, chattingRoomId);
-			pstmt.setInt(2, inviterId);
-			pstmt.setInt(3, inviteeId);
-			pstmt.executeUpdate();
-
-			conn.commit();
-
-			isCreated = true;
-
-			System.out.println(":: 채팅방이 생성되었습니다. 방 번호 : " + chattingRoomId + "| 채팅방 상대 : " + inviteeId);
-
-		} catch (Exception e) {
-			try {
-				if (conn != null)
-					conn.rollback();
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-			e.printStackTrace();
-		} finally {
-			Jdbc_Util.close(conn, pstmt, rs);
-		}
-
-		return isCreated;
+	    return chattingRoomId;
 	}
+
 
 	// 유저 ID로 그 ID가 속해있는 모든 방 보기
-	public void showChatRoomByUserId(int userId) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
+	public void showAllChatRoomsByUserId(int userId) {
+	    Connection conn = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+	    try {
+	        conn = Jdbc_Util.getConnection();
 
-		try {
+	        // 1:1 채팅방 조회
+	        String sqlSingle = "" +
+	            "SELECT C.CHATTINGROOM_ID, C.ROOMNAME, " +
+	            "CASE WHEN L.UNAME1 = ? THEN U2.NICKNAME ELSE U1.NICKNAME END AS OPPONENT_NICKNAME " +
+	            "FROM CHATTINGROOM C " +
+	            "JOIN CHATTINGLIST L ON C.CHATTINGROOM_ID = L.CHATTINGROOM_ID " +
+	            "JOIN MEMBER U1 ON L.UNAME1 = U1.ID " +
+	            "JOIN MEMBER U2 ON L.UNAME2 = U2.ID " +
+	            "WHERE L.UNAME1 = ? OR L.UNAME2 = ?";
+	        pstmt = conn.prepareStatement(sqlSingle);
+	        pstmt.setInt(1, userId);
+	        pstmt.setInt(2, userId);
+	        pstmt.setInt(3, userId);
+	        rs = pstmt.executeQuery();
 
-			conn = Jdbc_Util.getConnection();
+	        System.out.println("===== 1:1 채팅방 목록 =====");
+	        while (rs.next()) {
+	            int roomId = rs.getInt("CHATTINGROOM_ID");
+	            String roomName = rs.getString("ROOMNAME");
+	            String opponent = rs.getString("OPPONENT_NICKNAME");
+	            System.out.printf("[1:1] 방 ID: %d | 방 이름: %s | 상대: %s%n", roomId, roomName, opponent);
+	        }
+	        rs.close();
+	        pstmt.close();
 
-			String sql = "";
-			sql += "SELECT C.CHATTINGROOM_ID , C.ROOMNAME, ";
-			sql += "       CASE ";
-			sql += "           WHEN L.UNAME1 = ? THEN U2.NICKNAME ";
-			sql += "           ELSE U1.NICKNAME ";
-			sql += "       END AS OPPONENT_NICKNAME ";
-			sql += "FROM CHATTINGROOM C ";
-			sql += "JOIN CHATTINGLIST L ON C.CHATTINGROOM_ID = L.CHATTINGROOM_ID ";
-			sql += "JOIN MEMBER U1 ON L.UNAME1 = U1.ID ";
-			sql += "JOIN MEMBER U2 ON L.UNAME2 = U2.ID ";
-			sql += "WHERE L.UNAME1 = ? OR L.UNAME2 = ?";
+	        // 멀티채팅방 조회
+	        String sqlMulti = "" +
+	            "SELECT M.MULTICHATTINGROOM_ID, M.MULTIROOMNAME, " +
+	            "COUNT(L.ID) AS USER_COUNT, " +
+	            "LISTAGG(U.NICKNAME, ', ') WITHIN GROUP (ORDER BY U.NICKNAME) AS PARTICIPANTS " +
+	            "FROM MULTICHATTINGROOM M " +
+	            "JOIN MULTICHATTINGLIST L ON M.MULTICHATTINGROOM_ID = L.MULTICHATTINGROOM_ID " +
+	            "JOIN MEMBER U ON L.ID = U.ID " +
+	            "WHERE M.MULTICHATTINGROOM_ID IN (" +
+	            "    SELECT MULTICHATTINGROOM_ID FROM MULTICHATTINGLIST WHERE ID = ?" +
+	            ") " +
+	            "GROUP BY M.MULTICHATTINGROOM_ID, M.MULTIROOMNAME";
+	        pstmt = conn.prepareStatement(sqlMulti);
+	        pstmt.setInt(1, userId);
+	        rs = pstmt.executeQuery();
 
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setInt(1, userId);
-			pstmt.setInt(2, userId);
-			pstmt.setInt(3, userId);
+	        System.out.println("===== 멀티채팅방 목록 =====");
+	        while (rs.next()) {
+	            int roomId = rs.getInt("MULTICHATTINGROOM_ID");
+	            String roomName = rs.getString("MULTIROOMNAME");
+	            int userCount = rs.getInt("USER_COUNT");
+	            String participants = rs.getString("PARTICIPANTS");
+	            System.out.printf("[멀티] 방 ID: %d | 방 이름: %s | 인원: %d명 | 참가자: %s%n", roomId, roomName, userCount, participants);
+	        }
 
-			rs = pstmt.executeQuery();
-
-			System.out.println("===== 채팅방 목록 =====");
-			while (rs.next()) {
-				int roomId = rs.getInt("CHATTINGROOM_ID");
-				String roomName = rs.getString("ROOMNAME");
-				String Nick = rs.getString("OPPONENT_NICKNAME");
-				System.out.println("방 ID : " + roomId + " | 방 이름 : " + roomName + " | 대화 상대 : " + Nick);
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			Jdbc_Util.close(conn, pstmt, rs);
-		}
-
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    } finally {
+	        Jdbc_Util.close(conn, pstmt, rs);
+	    }
 	}
+
+
 
 	// 찾은 방에서 원하는 방 번호를 입력하면 그 방 안에 있는 메세지dB 다 불러와서 보여주기
 	public void showMessagesByRoomId(int roomId) {

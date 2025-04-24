@@ -5,16 +5,17 @@ import java.sql.*;
 
 public class MultiChattingDAO {
 
-	public int createMultiChatRoomandList(String roomName, int[] userIds) {
+	public boolean createMultiChatRoomandList(String roomName, int[] userIds) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
+		boolean isCreated = false;
 		int roomId = -1;
 
 		try {
 			if (userIds.length < 2 || userIds.length > 5) {
 				System.out.println("참가자는 최소 2명 , 최대 5명입니다.");
-				return roomId;
+				return isCreated;
 			}
 
 			conn = Jdbc_Util.getConnection();
@@ -53,6 +54,7 @@ public class MultiChattingDAO {
 			conn.commit();
 
 			System.out.println("채팅방이 생성되었습니다. | 방 이름 : " + roomName);
+			isCreated = true;
 
 		} catch (Exception e) {
 			try {
@@ -67,7 +69,43 @@ public class MultiChattingDAO {
 			Jdbc_Util.close(conn, pstmt, rs);
 		}
 
-		return roomId;
+		return isCreated;
+	}
+
+	// 채팅 메시지 보내기
+	public boolean sendMessageToMultiChatRoom(int roomId, int senderId, String content) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		boolean isSuccess = false;
+
+		try {
+
+			conn = Jdbc_Util.getConnection();
+
+			String sql = "";
+			sql += "INSERT INTO MULTICHATMESSAGE ";
+			sql += "(MULTICHATTINGMESSAGE_ID , MULTICHATTINGROOM_ID , UNAME1 , CONTENT , REGDATE) ";
+			sql += "VALUES (MULTICHATMESSAGE_ID.NEXTVAL, ?,?,?,SYSDATE)";
+
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, roomId);
+			pstmt.setInt(2, senderId);
+			pstmt.setString(3, content);
+
+			int result = pstmt.executeUpdate();
+			if (result > 0) {
+				isSuccess = true;
+			} else {
+				System.out.println("메시지 전송 실패");
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			Jdbc_Util.close(conn, pstmt);
+		}
+
+		return isSuccess;
 	}
 
 }

@@ -24,7 +24,7 @@ public class ChattingService {
 		OnetoOneChat onetoOneChat = new OnetoOneChat(loginUser.getKey(), inviteUserId, roomName);
 	
 		//DB저장
-		chattingDAO.createChatRoomandList(loginUser.getKey(), inviteUserId, roomName);
+		chattingDAO.createChatRoomAndList(loginUser.getKey(), inviteUserId, roomName);
 		
 		// 클라이언트 스레드 실행
 	    Thread clientThread = new Thread(() -> {
@@ -42,7 +42,7 @@ public class ChattingService {
 	
 	public void showAndEnterChatRooms() {
 	    int userId = loginUser.getKey();
-	    chattingDAO.showChatRoomByUserId(userId);  // 채팅방 목록 출력
+	    chattingDAO.showAllChatRoomsByUserId(userId);  // 채팅방 목록 출력
 
 	    System.out.println("입장할 방 ID를 입력하세요 (0 입력 시 취소): ");
 	    int roomId = strSc.nextInt();
