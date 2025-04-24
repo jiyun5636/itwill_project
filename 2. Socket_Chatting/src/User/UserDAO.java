@@ -48,8 +48,8 @@ public class UserDAO {
 		}
 		return result;
 	}
-	// 아이디 중복체크
 
+	// 아이디 중복체크
 	public boolean isNickNameDuplicate(String nickName) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -77,7 +77,6 @@ public class UserDAO {
 	}
 
 	// 로그인
-
 	public boolean login(String NickName, String password) {
 
 		Connection conn = null;
@@ -117,7 +116,7 @@ public class UserDAO {
 
 	}
 
-	// 유저삭제
+	// 회원탈퇴
 	public boolean deleteUser(int userId) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -144,6 +143,7 @@ public class UserDAO {
 		return isDelete;
 	}
 
+	// 유저 업데이트하기
 	public boolean UpdateUser(LoginUserInfo loginUserInfo, int userId) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -179,6 +179,7 @@ public class UserDAO {
 		return isUpdate;
 	}
 
+	// 닉네임으로 아이디찾기
 	public int findUserIdByName(String NickName) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;

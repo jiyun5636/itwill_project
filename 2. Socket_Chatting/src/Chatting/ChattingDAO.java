@@ -5,38 +5,15 @@ import java.sql.*;
 
 public class ChattingDAO {
 
-	public int createChatRoomandList(int inviterId, int inviteeId, String roomName) {
+	public boolean createChatRoomandList(int inviterId, int inviteeId, String roomName) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		int chattingRoomId = -1;
+		boolean isCreated = false;
 
 		try {
 			conn = Jdbc_Util.getConnection();
 			conn.setAutoCommit(false);
-
-			String checksql = "";
-			checksql += "SELECT CHATTINGROOM_ID ";
-			checksql += "FROM CHATTINGROOM ";
-			checksql += "WHERE (UNAME1 = ? AND UNAME2 = ?) ";
-			checksql += " OR (UNAME2 = ? AND UNAME1 = ?)";
-
-			pstmt = conn.prepareStatement(checksql);
-			pstmt.setInt(1, inviterId);
-			pstmt.setInt(2, inviteeId);
-			pstmt.setInt(3, inviteeId);
-			pstmt.setInt(4, inviterId);
-			rs = pstmt.executeQuery();
-
-			if (rs.next()) {
-				chattingRoomId = rs.getInt("CHATTINGROOM_ID");
-				System.out.print(":: 이미 존재하는 채팅방의 상대입니다. 방 번호: " + chattingRoomId);
-				System.out.println(" | 채팅방 상대 : " + inviteeId);
-				return 0;
-			}
-
-			rs.close();
-			pstmt.close();
 
 			// 채팅방 생성 쿼리
 			String sql = "";
@@ -51,6 +28,7 @@ public class ChattingDAO {
 			pstmt.executeUpdate();
 
 			rs = pstmt.getGeneratedKeys();
+			int chattingRoomId = -1;
 			if (rs.next()) {
 				chattingRoomId = rs.getInt(1);
 			}
@@ -72,6 +50,9 @@ public class ChattingDAO {
 			pstmt.executeUpdate();
 
 			conn.commit();
+
+			isCreated = true;
+
 			System.out.println(":: 채팅방이 생성되었습니다. 방 번호 : " + chattingRoomId + "| 채팅방 상대 : " + inviteeId);
 
 		} catch (Exception e) {
@@ -86,7 +67,7 @@ public class ChattingDAO {
 			Jdbc_Util.close(conn, pstmt, rs);
 		}
 
-		return chattingRoomId;
+		return isCreated;
 	}
 
 	// 유저 ID로 그 ID가 속해있는 모든 방 보기
