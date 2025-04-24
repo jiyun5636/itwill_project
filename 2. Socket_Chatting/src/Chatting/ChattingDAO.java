@@ -1,12 +1,12 @@
 package Chatting;
 
 import jdbcUtil.*;
+import java.sql.*;
 
 class ChattingDAO {
 
-	public static void main(String[] args) {
-		
+	
+	
 
-	}
 
 }
