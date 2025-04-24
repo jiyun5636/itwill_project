@@ -82,7 +82,6 @@ public class Client {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			System.out.println("전송종료");
 		}
 		
 	}
@@ -113,8 +112,7 @@ public class Client {
 				}
 
 			} catch (IOException e) {
-				e.printStackTrace();
-				System.out.println(":: 더이상 읽을 수 없습니다");
+				System.out.println("채팅창 종료");
 			}
 		}
 		

@@ -216,7 +216,7 @@ public class ChattingDAO {
 			conn = Jdbc_Util.getConnection();
 			String sql = "";
 			sql += "DELETE FROM CHATTINGLIST ";
-			sql += "WHERE CHATTINGROOM_ID ";
+			sql += "WHERE CHATTINGROOM_ID = ? ";
 			sql += "AND (UNAME1 = ? OR UNAME2 = ?)";
 
 			pstmt = conn.prepareStatement(sql);

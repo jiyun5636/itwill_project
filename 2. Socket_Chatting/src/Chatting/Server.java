@@ -13,6 +13,7 @@ import User.LoginUserInfo;
 
 public class Server {
 	private Map<String, DataOutputStream> clients; //접속자 명단(별칭, 출력객체)
+	ChattingService chattingService = new ChattingService();
 
 	public Server() {
 		clients = new HashMap<String, DataOutputStream>();
@@ -80,7 +81,7 @@ public class Server {
 		            }
 
 		            if (msg.equals("DELETE_ROOM")) {
-		                //chattingDAO.exitChatRoom(loginUser, )
+		                chattingDAO.exitChatRoom(loginUser.getKey(),chattingService.selectRoodId);
 		                System.out.println(":: " + nickName + "님이 방을 삭제했습니다");
 		                break;
 		            }

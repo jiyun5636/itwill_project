@@ -99,7 +99,7 @@ public class UserService {
 
 				// 가져온 정보 update
 				loginUser.updateUserInfo(nameUpdate, nickNameUpdate, passwordUpdate);
-				
+
 				userDAO.UpdateUser(loginUser, loginUser.getKey());
 				System.out.println("사용자 정보를 수정하였습니다.");
 				System.out.println("==== 수정된 사용자 정보 ====");
@@ -117,7 +117,7 @@ public class UserService {
 					userDAO.deleteUser(loginUser.getKey());
 					loginUser.clearUserInfo();
 					System.out.println("탈퇴되었습니다.");
-				}else {
+				} else {
 					System.out.println("잘못된 번호를 입력하셨습니다");
 				}
 				break;
@@ -132,7 +132,7 @@ public class UserService {
 		if (loginUser.getNickName() != null) {
 			loginUser.clearUserInfo();
 			System.out.println("로그아웃을 성공했습니다");
-		}else {
+		} else {
 			System.out.println("로그인이 되어있지 않습니다.");
 		}
 	}

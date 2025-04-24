@@ -7,16 +7,14 @@ import Chatting.ServerMain;
 import User.UserService;
 
 public class Main {
-
+	private static Thread serverThread = null;
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
 		int num;
 		UserService userService = new UserService();
 		ChattingService chattingService = new ChattingService();
-
-		Thread serverThread = null;
 		while (true) {
-
+			
 			System.out.println("----- 메인메뉴 -----");
 			System.out.println("1. 회원가입");
 			System.out.println("2. 로그인");
@@ -41,22 +39,17 @@ public class Main {
 				break;
 			// 채팅방 보기
 			case 3:
+				openServer();
 				chattingService.showAndEnterChatRooms(); // 채팅방 목록 보기 → 입장
 				break;
 			// 개인 채팅방 생성
 			case 4:
-				if (serverThread == null || !serverThread.isAlive()) {
-					serverThread = new Thread(() -> {
-						ServerMain.startServer(); // 서버 실행
-					});
-					serverThread.start();
-					// 서버는 join하지 않고 그냥 실행 (클라이언트가 join)
-				}
-
+				openServer();
 				chattingService.makeOneToOneChatting(); // 유저 초대 → 클라 실행
 				break;
 			// 단체 채팅방 생성
 			case 5:
+				openServer();
 				break;
 			// 회원정보 수정
 			case 6:
@@ -75,5 +68,14 @@ public class Main {
 			}
 		}
 
+	}
+	public static void openServer() {
+		if (serverThread == null || !serverThread.isAlive()) {
+			serverThread = new Thread(() -> {
+				ServerMain.startServer(); // 서버 실행
+			});
+			serverThread.start();
+			// 서버는 join하지 않고 그냥 실행 (클라이언트가 join)
+		}
 	}
 }

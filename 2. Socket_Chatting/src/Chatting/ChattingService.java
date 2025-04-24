@@ -10,6 +10,7 @@ public class ChattingService {
 	LoginUserInfo loginUser = LoginUserInfo.getInstance();
 	UserDAO userDAO = new UserDAO();
 	ChattingDAO chattingDAO = new ChattingDAO();
+	static public int selectRoodId = 0;
 
 	public void makeOneToOneChatting() {
 		System.out.println("방 이름을 설정해주세요.");
@@ -20,9 +21,6 @@ public class ChattingService {
 
 		int inviteUserId = userDAO.findUserIdByName(inviteUserNickName);
 
-		//방 생성
-		OnetoOneChat onetoOneChat = new OnetoOneChat(loginUser.getKey(), inviteUserId, roomName);
-	
 		//DB저장
 		chattingDAO.createChatRoomAndList(loginUser.getKey(), inviteUserId, roomName);
 		
@@ -47,6 +45,7 @@ public class ChattingService {
 	    System.out.println("입장할 방 ID를 입력하세요 (0 입력 시 취소): ");
 	    int roomId = strSc.nextInt();
 	    strSc.nextLine();
+	    selectRoodId=roomId;
 
 	    if (roomId == 0) {
 	        System.out.println("채팅방 입장을 취소했습니다.");
