@@ -64,7 +64,6 @@ public class Client {
 				
 				// ClientSender run() 부분
 				while (true) {
-				    System.out.print("메시지 작성> ");
 				    String msg = sc.nextLine();
 
 				    if (msg.equals("나가기")) {

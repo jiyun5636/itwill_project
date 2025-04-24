@@ -111,7 +111,7 @@ public class Server {
 		        DataOutputStream out = clients.get(key);
 		        try {
 		            if (key.equals(sender)) {
-		                out.writeUTF(msg);  // 발신자에게는 그대로 메시지 출력
+		                //out.writeUTF(msg);  // 발신자에게는 그대로 메시지 출력
 		            } else {
 		                out.writeUTF(sender + " : " + msg);  // 수신자에게는 닉네임 : 메시지
 		            }
