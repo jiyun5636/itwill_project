@@ -1,5 +1,9 @@
 import java.util.Scanner;
 
+import Chatting.ChattingService;
+import Chatting.Client;
+import Chatting.ClientMain;
+import Chatting.ServerMain;
 import User.UserService;
 
 public class Main {
@@ -8,8 +12,11 @@ public class Main {
 		Scanner sc = new Scanner(System.in);
 		int num;
 		UserService userService = new UserService();
+		ChattingService chattingService = new ChattingService();
 
+		Thread serverThread = null;
 		while (true) {
+			
 			System.out.println("----- 메인메뉴 -----");
 			System.out.println("1. 회원가입");
 			System.out.println("2. 로그인");
@@ -22,7 +29,7 @@ public class Main {
 
 			System.out.print(">> 원하시는 번호를 입력해주세요 : ");
 			num = sc.nextInt();
-
+			sc.nextLine();
 			switch (num) {
 			// 회원가입
 			case 1:
@@ -37,7 +44,16 @@ public class Main {
 				break;
 			// 개인 채팅방 생성
 			case 4:
-				break;
+				if (serverThread == null || !serverThread.isAlive()) {
+	                serverThread = new Thread(() -> {
+	                    ServerMain.startServer();  // 서버 실행
+	                });
+	                serverThread.start();
+	                // 서버는 join하지 않고 그냥 실행 (클라이언트가 join)
+	            }
+
+	            chattingService.makeOneToOneChatting();  // 유저 초대 → 클라 실행
+	            break;
 			// 단체 채팅방 생성
 			case 5:
 				break;

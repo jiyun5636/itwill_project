@@ -2,54 +2,14 @@ package User;
 
 import java.util.Scanner;
 
+import Chatting.ServerMain;
+
 public class UserService {
 	Scanner intSc = new Scanner(System.in);
 	Scanner strSc = new Scanner(System.in);
 	UserDAO userDAO = new UserDAO();
 	User user = new User();
 	LoginUserInfo loginUser = LoginUserInfo.getInstance();
-
-	public void selectMenu(int num) {
-		switch (num) {
-		// 회원가입
-		case 1:
-			signUp();
-			break;
-
-		// 로그인
-		case 2:
-			signIn();
-			break;
-
-		// 채팅방 보기
-		case 3:
-			break;
-
-		// 개인 채팅방 생성
-		case 4:
-			break;
-
-		// 단체 채팅방 생성
-		case 5:
-			break;
-
-		// 회원정보 수정
-		case 6:
-			UpdateUser();
-			break;
-
-		// 로그아웃
-		case 7:
-			logOut();
-			break;
-			
-		case 8:
-			System.exit(0);
-
-		default:
-			System.out.println("잘못된 번호를 입력하였습니다.");
-		}
-	}
 
 	public void signUp() {
 		System.out.print("이름을 입력하세요: ");

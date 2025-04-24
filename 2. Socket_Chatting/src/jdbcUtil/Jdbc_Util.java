@@ -4,10 +4,6 @@ import java.sql.*;
 
 //자바와 오라클 연동하는 클래스
 public class Jdbc_Util {
-//	private static final String DRIVER = "oracle.jdbc.OracleDriver";
-//	private static final String URL = "jdbc:oracle:thin:@localhost:1521:xe";
-//	private static final String USER = "ITWILL";
-//	private static final String PASSWORD = "itwillpw";
 
 	// DB연결 작업 기능
 	public static Connection getConnection() {
@@ -19,7 +15,7 @@ public class Jdbc_Util {
 			e.printStackTrace();
 		} catch (SQLException e) {
 			System.out.println("[예외발생] DB연결실패");
-			// e.printStackTrace();
+			e.printStackTrace();
 		}
 		return null;
 	}
