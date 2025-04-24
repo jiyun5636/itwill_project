@@ -39,6 +39,34 @@ public class ChattingService {
 	        e.printStackTrace();
 	    }
 	}
+	
+	public void showAndEnterChatRooms() {
+	    int userId = loginUser.getKey();
+	    chattingDAO.showChatRoomByUserId(userId);  // 채팅방 목록 출력
+
+	    System.out.println("입장할 방 ID를 입력하세요 (0 입력 시 취소): ");
+	    int roomId = strSc.nextInt();
+	    strSc.nextLine();
+
+	    if (roomId == 0) {
+	        System.out.println("채팅방 입장을 취소했습니다.");
+	        return;
+	    }
+
+	    // 클라이언트 실행 (채팅 시작)
+	    Thread clientThread = new Thread(() -> {
+	        Client client = new Client();
+	        client.start();
+	    });
+	    clientThread.start();
+
+	    try {
+	        clientThread.join();  // 클라이언트가 종료될 때까지 대기
+	    } catch (InterruptedException e) {
+	        e.printStackTrace();
+	    }
+	}
+
 
 	public void findRoomByUserKey() {
 		System.out.println("=== 현재 참여중인 방 ===");
