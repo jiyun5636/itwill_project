@@ -23,7 +23,6 @@ public class Server {
             serverSocket = new ServerSocket(10000);
             while (true) {
                 Socket socket = serverSocket.accept();
-                System.out.println("클라이언트 접속 됨");
 
                 // 쓰레드 생성 및 실행
                 ServerReceiver thread = new ServerReceiver(socket);
@@ -68,7 +67,7 @@ public class Server {
                 roomClients.putIfAbsent(roomId, new HashMap<>());
                 roomClients.get(roomId).put(nickName, out);
 
-                sendToRoom("<" + nickName + ">님이 입장했습니다");
+                sendToRoom("<" + nickName + ">님이 입장했습니다",nickName);
 
                 // 메시지 수신 및 송신
                 while (true) {
@@ -80,12 +79,12 @@ public class Server {
 
                     if (msg.equalsIgnoreCase("DELETE_ROOM")) {
                         // 방 삭제 로직 추가 필요 (예: DB 처리)
-                        sendToRoom(":: " + nickName + "님이 방을 삭제했습니다");
+                        sendToRoom(nickName + "님이 방을 삭제했습니다",nickName);
                         roomClients.remove(roomId);
                         break;
                     }
 
-                    sendToRoom(nickName + " : " + msg);
+                    sendToRoom(nickName + " : " + msg,nickName);
                 }
             } catch (IOException e) {
                 System.out.println("연결 종료: " + nickName);
@@ -93,7 +92,7 @@ public class Server {
                 // 퇴장 처리
                 if (roomClients.containsKey(roomId)) {
                     roomClients.get(roomId).remove(nickName);
-                    sendToRoom("<" + nickName + ">님이 나갔습니다");
+                    sendToRoom("<" + nickName + ">님이 나갔습니다",nickName);
                 }
                 try {
                     if (socket != null) socket.close();
@@ -103,12 +102,18 @@ public class Server {
             }
         }
 
-        private void sendToRoom(String msg) {
+        private void sendToRoom(String msg, String sender) {
             Map<String, DataOutputStream> clientsInRoom = roomClients.get(roomId);
+
             if (clientsInRoom != null) {
-                for (DataOutputStream clientOut : clientsInRoom.values()) {
+                for (String key : clientsInRoom.keySet()) {
+                    DataOutputStream out = clientsInRoom.get(key);
                     try {
-                        clientOut.writeUTF(msg);
+                        if (key.equals(sender)) {
+                            // 발신자에게는 보내지 않음 (필요 시 다른 로직 추가 가능)
+                        } else {
+                            out.writeUTF(sender + " : " + msg);  // 수신자에게만 닉네임 : 메시지
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
