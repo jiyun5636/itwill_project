@@ -9,114 +9,119 @@ import java.util.Scanner;
 import User.LoginUserInfo;
 
 public class Client {
-	public void start() {
-		Socket socket = null;
+    public void start() {
+        Socket socket = null;
 
-		try {
-			// socket = new Socket("localhost", 10000);
-			socket = new Socket("192.168.18.8", 10000);
+        try {
+            socket = new Socket("192.168.18.8", 10000);
 
-			// 메시지 전송 쓰레드 만들기
-			ClientSender clientSender = new ClientSender(socket);
-			clientSender.start();
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            DataInputStream in = new DataInputStream(socket.getInputStream());
 
-			// 메시지 수신 쓰레드 만들기
-			ClientReceiver clientReceiver = new ClientReceiver(socket);
-			clientReceiver.start();
+            // 닉네임과 방 ID 전송
+            out.writeUTF(LoginUserInfo.getInstance().getNickName());
+            out.writeInt(new ChattingService().selectRoomId);
 
-			clientSender.join();
-			clientReceiver.join();
+            // 서버 응답 받기
+            String serverResponse = in.readUTF();
+            ServerMessageType responseType = ServerMessageType.valueOf(serverResponse);
+            if (responseType == ServerMessageType.NO_ROOM) {
+                System.out.println("참가한 방이 없습니다. 메인메뉴로 돌아갑니다.");
+                socket.close();
+                return;
+            }
 
-		} catch (IOException | InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
+            // 송수신 스레드 시작
+            ClientSender clientSender = new ClientSender(socket, out);
+            clientSender.start();
 
-	private class ClientSender extends Thread {
-		private Socket socket;
-		private DataOutputStream out;
-		LoginUserInfo loginUser = LoginUserInfo.getInstance();
-		String nickname = loginUser.getNickName();
-		ChattingService chattingService = new ChattingService();
-		int roodId = chattingService.selectRoodId;
+            ClientReceiver clientReceiver = new ClientReceiver(socket, in);
+            clientReceiver.start();
 
-		public ClientSender(Socket socket) {
-			this.socket = socket;
-			try {
-				out = new DataOutputStream(socket.getOutputStream());
-			} catch (IOException e) {
-				// e.printStackTrace();
-				System.out.println("[예외발생] ClientSender 생성자 " + "out 객체 생성 실패");
-			}
-		}
+            clientSender.join();
+            clientReceiver.join();
 
-		@Override
-		public void run() {
-			if (out == null) {
-				System.out.println("[예외발생] out 객체가 null 입니다");
-				return;
-			}
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
-			// 메시지 작성하고, 작성된 메시지 서버로 전송
-			Scanner sc = new Scanner(System.in);
+    private class ClientSender extends Thread {
+        private Socket socket;
+        private DataOutputStream out;
 
-			try {
+        public ClientSender(Socket socket, DataOutputStream out) {
+            this.socket = socket;
+            this.out = out;
+        }
 
-				out.writeUTF(nickname); // 첫번째 메시지 전송 : 이름(별칭)
-				out.writeInt(roodId);
+        @Override
+        public void run() {
+            Scanner sc = new Scanner(System.in);
 
-				// ClientSender run() 부분
-				while (true) {
-					String msg = sc.nextLine();
+            try {
+                while (!socket.isClosed()) {
+                    String msg = sc.nextLine();
 
-					if (msg.equals("나가기")) {
-						out.writeUTF("EXIT"); // 서버에도 알림
-						break; // 소켓 종료 준비
-					}
-					if (msg.equals("방나가기")) {
-						out.writeUTF("DELETE_ROOM"); // 서버에 방 삭제 요청
-						break; // 소켓 종료 준비
-					}
-					out.writeUTF(msg);
-				}
-				socket.close(); // 소켓 종료
-				System.out.println("채팅방을 나갔습니다");
+                    if (msg.equals("나가기")) {
+                        out.writeUTF(ServerMessageType.EXIT.name());
+                        break;
+                    }
+                    if (msg.equals("방나가기")) {
+                        out.writeUTF(ServerMessageType.DELETE_ROOM.name());
+                        break;
+                    }
+                    out.writeUTF(ServerMessageType.NORMAL.name() + ":" + msg);
+                }
 
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+                socket.close();
+                System.out.println("채팅방을 나갔습니다");
 
-	// 메시지 수신 쓰레드
-	private class ClientReceiver extends Thread {
-		private Socket socket;
-		DataInputStream in;
+            } catch (IOException e) {
+                System.out.println("서버와 연결이 종료되었습니다.");
+            }
+        }
+    }
 
-		public ClientReceiver(Socket socket) {
-			this.socket = socket;
+    private class ClientReceiver extends Thread {
+        private Socket socket;
+        private DataInputStream in;
 
-			try {
-				in = new DataInputStream(socket.getInputStream());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+        public ClientReceiver(Socket socket, DataInputStream in) {
+            this.socket = socket;
+            this.in = in;
+        }
 
-		@Override
-		public void run() {
-			// 메시지를 받아서 화면 출력(반복)
-			try {
-				// ClientReceiver run() 부분
-				while (true) {
-					String msg = in.readUTF();
-					System.out.println(msg);
-				}
+        @Override
+        public void run() {
+            try {
+                while (!socket.isClosed()) {
+                    String msg = in.readUTF();
+                    ServerMessageType type;
+                    String content = "";
 
-			} catch (IOException e) {
-				System.out.println("채팅창 종료");
-			}
-		}
+                    if (msg.contains(":")) {
+                        String[] parts = msg.split(":", 2);
+                        type = ServerMessageType.valueOf(parts[0]);
+                        content = parts[1];
+                    } else {
+                        type = ServerMessageType.valueOf(msg);
+                    }
 
-	}
+                    switch (type) {
+                        case EXIT:
+                        case DELETE_ROOM:
+                            System.out.println("채팅방이 종료되었습니다. 메인메뉴로 돌아갑니다.");
+                            socket.close();
+                            return;
+                        case NORMAL:
+                            System.out.println(content);
+                            break;
+                    }
+                }
+            } catch (IOException e) {
+                System.out.println("채팅창 종료");
+            }
+        }
+    }
 }

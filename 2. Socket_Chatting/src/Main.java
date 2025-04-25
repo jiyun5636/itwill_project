@@ -25,7 +25,7 @@ public class Main {
 			System.out.println("7. 로그아웃");
 			System.out.println("8. 종료");
 
-			System.out.print(">> 원하시는 번호를 입력해주세요 : ");
+			System.out.print(">> 원하시는 번호를 입력해주세요 : \n");
 			num = sc.nextInt();
 			sc.nextLine();
 			switch (num) {
@@ -40,7 +40,7 @@ public class Main {
 			// 채팅방 보기
 			case 3:
 				openServer();
-				chattingService.showAndEnterChatRooms(); // 채팅방 목록 보기 → 입장
+				chattingService.showAndJoinChatRooms(); // 채팅방 목록 보기 → 입장
 				break;
 			// 개인 채팅방 생성
 			case 4:
@@ -50,6 +50,7 @@ public class Main {
 			// 단체 채팅방 생성
 			case 5:
 				openServer();
+				chattingService.makeGroupChatting();
 				break;
 			// 회원정보 수정
 			case 6:

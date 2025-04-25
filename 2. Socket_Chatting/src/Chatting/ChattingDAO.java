@@ -243,7 +243,6 @@ public class ChattingDAO {
 	}
 
 	// 유저 아이디
-
 	public boolean checkRoomInUser(int roomId, int userId) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
