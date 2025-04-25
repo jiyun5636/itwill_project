@@ -31,6 +31,7 @@ public class Client {
 	        e.printStackTrace();
 	    }
 	}
+	
 	private class ClientSender extends Thread {
 		private Socket socket;
 		private DataOutputStream out;
@@ -83,7 +84,6 @@ public class Client {
 				e.printStackTrace();
 			}
 		}
-		
 	}
 	
 	//메시지 수신 쓰레드

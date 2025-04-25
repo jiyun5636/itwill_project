@@ -3,125 +3,117 @@ package Chatting;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-import User.LoginUserInfo;
-
 public class Server {
-	private Map<String, DataOutputStream> clients; //접속자 명단(별칭, 출력객체)
-	ChattingService chattingService = new ChattingService();
+    private Map<Integer, Map<String, DataOutputStream>> roomClients; // 방 번호별 (닉네임, 출력스트림)
 
-	public Server() {
-		clients = new HashMap<String, DataOutputStream>();
-	}
-	public void start() {
-		ServerSocket serverSocket = null;
-		
-		try {
-			serverSocket = new ServerSocket(10000);
-			while (true) {
-				Socket socket = serverSocket.accept(); //접속 대기
-				
-				// 접속자가 보낸 메시지를 읽을 수 있는 읽기 전용 쓰레드 생성
-				ServerReceiver thread = new ServerReceiver(socket);
-				thread.start(); //쓰레드로 동작
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (serverSocket != null) serverSocket.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	private class ServerReceiver extends Thread {
-		Socket socket;
-		DataInputStream in;
-		DataOutputStream out;
-		String nickName;
-		ChattingDAO chattingDAO=new ChattingDAO();
-		LoginUserInfo loginUser = LoginUserInfo.getInstance();
-		
-		public ServerReceiver(Socket socket) { //연결된 소켓 받아서 작업
-			this.socket = socket;
-			
-			try {
-				in = new DataInputStream(socket.getInputStream());
-				out = new DataOutputStream(socket.getOutputStream());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-		}
-		
-		@Override
-		public void run() {
-		    try {
-		        // 1. 클라이언트 첫 메시지: 닉네임 받기
-		        nickName = in.readUTF();
-		        // 2. 접속자 목록에 추가
-		        clients.put(nickName, out);
+    public Server() {
+        roomClients = new HashMap<>();
+    }
 
-		        // 3. 전체에게 입장 메시지 전송
-		        sendToAll("<" + nickName + ">님이 입장했습니다", nickName);
+    public void start() {
+        System.out.println("서버 시작");
+        ServerSocket serverSocket = null;
 
-		        // 4. 메시지 반복 수신
-		        while (true) {
-		            String msg = in.readUTF();
+        try {
+            serverSocket = new ServerSocket(10000);
+            while (true) {
+                Socket socket = serverSocket.accept();
+                System.out.println("클라이언트 접속 됨");
 
-		            if (msg.equals("EXIT")) {
-		                // "나가기" 처리 (단순히 소켓 종료)
-		                break;
-		            }
+                // 쓰레드 생성 및 실행
+                ServerReceiver thread = new ServerReceiver(socket);
+                thread.start();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (serverSocket != null) serverSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-		            if (msg.equals("DELETE_ROOM")) {
-		                chattingDAO.exitChatRoom(loginUser.getKey(),chattingService.selectRoodId);
-		                System.out.println(":: " + nickName + "님이 방을 삭제했습니다");
-		                break;
-		            }
+    private class ServerReceiver extends Thread {
+        Socket socket;
+        DataInputStream in;
+        DataOutputStream out;
+        String nickName;
+        int roomId;
 
-		            // 일반 메시지 전송 (발신자/수신자 포맷 구분)
-		            sendToAll(msg, nickName);
-		        }
+        public ServerReceiver(Socket socket) {
+            this.socket = socket;
+            try {
+                in = new DataInputStream(socket.getInputStream());
+                out = new DataOutputStream(socket.getOutputStream());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
-		    } catch (IOException e) {
-		        System.out.println("연결 종료 (" + nickName + ")");
-		    } finally {
-		        // 5. 접속 종료 처리
-		        clients.remove(nickName);
-		        sendToAll("<" + nickName + ">님이 나갔습니다", nickName);
-		        try {
-		            if (socket != null) socket.close();
-		        } catch (IOException e) {
-		            e.printStackTrace();
-		        }
-		    }
-		}
+        @Override
+        public void run() {
+            try {
+                // 닉네임과 방 번호 수신
+                nickName = in.readUTF();
+                roomId = in.readInt();
 
+                // 방 목록에 클라이언트 등록
+                roomClients.putIfAbsent(roomId, new HashMap<>());
+                roomClients.get(roomId).put(nickName, out);
 
-		//접속자 전체에게 메시지 전달
-		// Server sendToAll 수정
-		private void sendToAll(String msg, String sender) {
-		    for (String key : clients.keySet()) {
-		        DataOutputStream out = clients.get(key);
-		        try {
-		            if (key.equals(sender)) {
-		                //out.writeUTF(msg);  // 발신자에게는 그대로 메시지 출력
-		            } else {
-		                out.writeUTF(sender + " : " + msg);  // 수신자에게는 닉네임 : 메시지
-		            }
-		        } catch (IOException e) {
-		            e.printStackTrace();
-		        }
-		    }
-		}
+                sendToRoom("<" + nickName + ">님이 입장했습니다");
 
+                // 메시지 수신 및 송신
+                while (true) {
+                    String msg = in.readUTF();
 
-	}
+                    if (msg.equalsIgnoreCase("EXIT")) {
+                        break;
+                    }
+
+                    if (msg.equalsIgnoreCase("DELETE_ROOM")) {
+                        // 방 삭제 로직 추가 필요 (예: DB 처리)
+                        sendToRoom(nickName + "님이 방을 삭제했습니다");
+                        roomClients.remove(roomId);
+                        break;
+                    }
+
+                    sendToRoom(nickName + " : " + msg);
+                }
+            } catch (IOException e) {
+                System.out.println("연결 종료: " + nickName);
+            } finally {
+                // 퇴장 처리
+                if (roomClients.containsKey(roomId)) {
+                    roomClients.get(roomId).remove(nickName);
+                    sendToRoom("<" + nickName + ">님이 나갔습니다");
+                }
+                try {
+                    if (socket != null) socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        private void sendToRoom(String msg) {
+            Map<String, DataOutputStream> clientsInRoom = roomClients.get(roomId);
+            if (clientsInRoom != null) {
+                for (DataOutputStream clientOut : clientsInRoom.values()) {
+                    try {
+                        clientOut.writeUTF(msg);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
 }
