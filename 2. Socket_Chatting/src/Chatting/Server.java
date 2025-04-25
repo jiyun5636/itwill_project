@@ -80,7 +80,7 @@ public class Server {
 
                     if (msg.equalsIgnoreCase("DELETE_ROOM")) {
                         // 방 삭제 로직 추가 필요 (예: DB 처리)
-                        sendToRoom(nickName + "님이 방을 삭제했습니다");
+                        sendToRoom(":: " + nickName + "님이 방을 삭제했습니다");
                         roomClients.remove(roomId);
                         break;
                     }
