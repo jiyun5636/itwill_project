@@ -73,7 +73,7 @@ public class ChattingDAO {
 					+ "CASE WHEN L.UNAME1 = ? THEN U2.NICKNAME ELSE U1.NICKNAME END AS OPPONENT_NICKNAME "
 					+ "FROM CHATTINGROOM C " + "JOIN CHATTINGLIST L ON C.CHATTINGROOM_ID = L.CHATTINGROOM_ID "
 					+ "JOIN MEMBER U1 ON L.UNAME1 = U1.ID " + "JOIN MEMBER U2 ON L.UNAME2 = U2.ID "
-					+ "WHERE L.UNAME1 = ? OR L.UNAME2 = ?";
+					+ "WHERE L.UNAME1 = ? OR L.UNAME2 = ?" + "ORDER BY C.CHATTINGROOM_ID";
 			pstmt = conn.prepareStatement(sqlSingle);
 			pstmt.setInt(1, userId);
 			pstmt.setInt(2, userId);
@@ -97,7 +97,7 @@ public class ChattingDAO {
 					+ "JOIN MULTICHATTINGLIST L ON M.MULTICHATTINGROOM_ID = L.MULTICHATTINGROOM_ID "
 					+ "JOIN MEMBER U ON L.ID = U.ID " + "WHERE M.MULTICHATTINGROOM_ID IN ("
 					+ "    SELECT MULTICHATTINGROOM_ID FROM MULTICHATTINGLIST WHERE ID = ?" + ") "
-					+ "GROUP BY M.MULTICHATTINGROOM_ID, M.MULTIROOMNAME";
+					+ "GROUP BY M.MULTICHATTINGROOM_ID, M.MULTIROOMNAME ORDER BY M.MULTICHATTINGROOM_ID";
 			pstmt = conn.prepareStatement(sqlMulti);
 			pstmt.setInt(1, userId);
 			rs = pstmt.executeQuery();
@@ -271,9 +271,38 @@ public class ChattingDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-
+			Jdbc_Util.close(conn, pstmt, rs);
 		}
 
 		return ischeck;
+	}
+
+	public boolean isRoomExistById(int roomId) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		boolean isExist = false;
+		
+		try {
+			conn = Jdbc_Util.getConnection();
+			String sql = "";
+			sql += "SELECT COUNT(*) AS CNT FROM CHATTINGROOM ";
+			sql += "WHERE CHATTINGROOM_ID = ?";
+			
+			
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, roomId);
+		
+			rs = pstmt.executeQuery();
+			if (rs.next() && rs.getInt("CNT") > 0 ) {
+				isExist = true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			Jdbc_Util.close(conn, pstmt, rs);
+		}
+		
+		return false;
 	}
 }

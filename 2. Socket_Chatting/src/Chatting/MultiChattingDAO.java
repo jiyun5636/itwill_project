@@ -13,8 +13,8 @@ public class MultiChattingDAO {
 		int roomId = -1;
 
 		try {
-			if (userIds.length < 2 || userIds.length > 5) {
-				System.out.println("참가자는 최소 2명 , 최대 5명입니다.");
+			if (userIds.length > 5) {
+				System.out.println("최대 5명입니다.");
 				return isCreated;
 			}
 
@@ -108,4 +108,101 @@ public class MultiChattingDAO {
 		return isSuccess;
 	}
 
+	// 유저
+	public boolean isUserInMultiRoom(int roomId, int userId) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		boolean isCheck = false;
+
+		try {
+			conn = Jdbc_Util.getConnection();
+			String sql = "";
+			sql += "SELECT COUNT(*) FROM MULTICHATTINGLIST ";
+			sql += "WHERE MULTICHATTINGROOM_ID = ? AND UID = ? ";
+
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, roomId);
+			pstmt.setInt(2, userId);
+
+			rs = pstmt.executeQuery();
+
+			if (rs.next() && rs.getInt(1) > 0) {
+				isCheck = true;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+
+		} finally {
+			Jdbc_Util.close(conn, pstmt, rs);
+		}
+
+		return isCheck;
+	}
+
+	// 방 나가기
+	public boolean exitMultiChatRoom(int roomId, int userId) {
+		Connection conn = null;
+		PreparedStatement delList = null;
+		PreparedStatement countStmt = null;
+		PreparedStatement delRoom = null;
+		ResultSet rs = null;
+		boolean success = false;
+
+		try {
+			conn = Jdbc_Util.getConnection();
+			conn.setAutoCommit(false);
+
+			// 1) 참가자 삭제
+			String delSql = "DELETE FROM MULTICHATTINGLIST WHERE MULTICHATTINGROOM_ID = ? AND UID = ?";
+			delList = conn.prepareStatement(delSql);
+			delList.setInt(1, roomId);
+			delList.setInt(2, userId);
+			int removed = delList.executeUpdate();
+			delList.close();
+
+			if (removed > 0) {
+				// 2) 남은 참가자 수 확인
+				String countSql = "SELECT COUNT(*) FROM MULTICHATTINGLIST WHERE MULTICHATTINGROOM_ID = ?";
+				countStmt = conn.prepareStatement(countSql);
+				countStmt.setInt(1, roomId);
+				rs = countStmt.executeQuery();
+				int cnt = 0;
+				if (rs.next())
+					cnt = rs.getInt(1);
+				rs.close();
+				countStmt.close();
+
+				// 3) 0명인 경우 방 삭제
+				if (cnt == 0) {
+					String roomDelSql = "DELETE FROM MULTICHATTINGROOM WHERE MULTICHATTINGROOM_ID = ?";
+					delRoom = conn.prepareStatement(roomDelSql);
+					delRoom.setInt(1, roomId);
+					delRoom.executeUpdate();
+					delRoom.close();
+				}
+
+				conn.commit();
+				success = true;
+				System.out.println("[멀티] 방 나가기 완료" + (cnt == 0 ? " (방이 비어 삭제됨)" : ""));
+			} else {
+				conn.rollback();
+				System.out.println("[멀티] 방에 참가 중인 사용자가 아닙니다.");
+			}
+		} catch (SQLException e) {
+			try {
+				if (conn != null)
+					conn.rollback();
+			} catch (SQLException ex) {
+				ex.printStackTrace();
+			}
+			e.printStackTrace();
+		} finally {
+			Jdbc_Util.close(null, delRoom);
+			Jdbc_Util.close(null, countStmt);
+			Jdbc_Util.close(conn, delList, rs);
+		}
+		return success;
+	}
 }
