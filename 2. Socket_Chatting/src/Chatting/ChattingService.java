@@ -1,5 +1,9 @@
 package Chatting;
 
+import java.io.DataOutputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import User.LoginUserInfo;
@@ -77,18 +81,24 @@ public class ChattingService {
 		
 		//최대인원 5명
 		String inviteUserNickName[] = new String[5];
-		int inviteUserKey[] = new int[5];
+		//채팅방이름, 번지, userId
+		Map<String, Map<Integer, Integer>> groupUserInfo = new HashMap<String, Map<Integer, Integer>>();
+		//번지, userId
+		Map<Integer, Integer> userInfo = new HashMap<Integer, Integer>();
+		Integer inviteUserKey[] = new Integer[5];
 		
 		//0번 인덱스는 무조건 그룹채팅방 만든 유저정보
-		inviteUserNickName[0]=loginUser.getNickName();
-		inviteUserKey[0]=loginUser.getKey();
+		userInfo.put(0,loginUser.getKey());
+		groupUserInfo.put(roomName, userInfo);
 		
 		for (int i = 1; i < inviteUserNickName.length; i++) {
 			System.out.print("초대할 유저 닉네임 : ");
 			inviteUserNickName[i] = strSc.nextLine();
 			
-			//초대한 사용자 key값을 뽑아서 int배열에 저장 (동일 인덱스)
-			inviteUserKey[i] = userDAO.findUserIdByName(inviteUserNickName[i]);
+			inviteUserKey[i]=userDAO.findUserIdByName(inviteUserNickName[i]);
+			//초대한 사용자 key값을 뽑아서 Map에 저장 (동일 인덱스)
+			userInfo.put(i,inviteUserKey[i]);
+			groupUserInfo.put(roomName, userInfo);
 			
 			if(inviteUserNickName[i].equals("끝")) {
 				if(inviteUserNickName[1]==null) {
@@ -96,10 +106,10 @@ public class ChattingService {
 				}
 				break;
 			}
+			
 		}
-		multiChattingDAO.createMultiChatRoomandList(roomName, inviteUserKey);
+		multiChattingDAO.createMultiChatRoomandList(roomName, groupUserInfo.get(roomName));
 
-		//int inviteUserId = userDAO.findUserIdByName(inviteUserNickName);
 
 		// 클라이언트 스레드 실행
 		Thread clientThread = new Thread(() -> {
