@@ -1,4 +1,4 @@
-package Chatting;
+package Chatting.groupChatting;
 
 import jdbcUtil.*;
 import java.sql.*;

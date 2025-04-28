@@ -2,8 +2,6 @@ package User;
 
 import java.util.Scanner;
 
-import Chatting.ServerMain;
-
 public class UserService {
 	Scanner intSc = new Scanner(System.in);
 	Scanner strSc = new Scanner(System.in);

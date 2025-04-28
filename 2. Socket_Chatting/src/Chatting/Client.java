@@ -7,6 +7,10 @@ import java.net.Socket;
 import java.time.LocalDateTime;
 import java.util.Scanner;
 
+import Chatting.ChattingService;
+import Chatting.ServerMessageType;
+import Chatting.groupChatting.MultiChattingDAO;
+import Chatting.oneToOneChatting.ChattingDAO;
 import User.LoginUserInfo;
 
 public class Client {
