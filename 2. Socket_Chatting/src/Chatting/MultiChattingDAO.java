@@ -11,7 +11,7 @@ public class MultiChattingDAO {
 	    String insertRoomSql = "INSERT INTO MULTICHATTINGROOM (" +
 	            "MULTICHATTINGROOM_ID, MULTIROOMNAME, PARTICIPANT1_ID, PARTICIPANT2_ID, " +
 	            "PARTICIPANT3_ID, PARTICIPANT4_ID, PARTICIPANT5_ID) " +
-	            "VALUES (MULTICHATTINGROOM_SEQ.NEXTVAL, ?, ?, ?, ?, ?, ?)";
+	            "VALUES (CHATTINGROOM_ID.NEXTVAL, ?, ?, ?, ?, ?, ?)";
 
 	    String insertListSql = "INSERT INTO MULTICHATTINGLIST (" +
 	            "MULTICHATTINGLIST_ID, MULTICHATTINGROOM_ID, ID) " +
@@ -195,7 +195,7 @@ public class MultiChattingDAO {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			e.printStackTrace();
+			e.printStackTrace();	
 		} finally {
 			Jdbc_Util.close(null, delRoom);
 			Jdbc_Util.close(null, countStmt);
