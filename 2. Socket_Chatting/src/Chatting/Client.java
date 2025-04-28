@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.time.LocalDateTime;
 import java.util.Scanner;
 
 import User.LoginUserInfo;
@@ -59,6 +60,7 @@ public class Client {
         @Override
         public void run() {
             Scanner sc = new Scanner(System.in);
+            LocalDateTime date;
 
             try {
                 while (!socket.isClosed()) {

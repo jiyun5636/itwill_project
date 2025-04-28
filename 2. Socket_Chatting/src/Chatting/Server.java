@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,11 +64,11 @@ public class Server {
         public void run() {
             try {
                 nickName = in.readUTF();
-                roomId = in.readInt();
                 userKey = in.readInt();
+                roomId = in.readInt();
 
-                if (!chattingDAO.checkRoomInUser(roomId, userKey)&&!multiChattingDAO.isUserInMultiRoom(roomId, userKey)) {
-                    out.writeUTF(ServerMessageType.NO_ROOM.name());
+                if (chattingDAO.checkRoomInUser(roomId, userKey)&&multiChattingDAO.isUserInMultiRoom(roomId, userKey)) {
+                	out.writeUTF(ServerMessageType.NO_ROOM.name());
                     return;
                 }
 
@@ -95,10 +96,16 @@ public class Server {
                             out.writeUTF(ServerMessageType.EXIT.name());
                             return;
                         case DELETE_ROOM:
-                            chattingDAO.DeleteRoom(loginUser.getKey(), roomId);
+                            chattingDAO.DeleteRoom(userKey, roomId);
                             out.writeUTF(ServerMessageType.DELETE_ROOM.name());
                             return;
                         case NORMAL:
+                        	if(isOneToOneRoom(roomId)) {
+                        		chattingDAO.sendMessage(roomId, userKey, content);
+                        	}
+                        	else{
+                        		multiChattingDAO.sendMessageToMultiChatRoom(roomId, userKey, content);
+                        	}
                             sendToRoom(ServerMessageType.NORMAL.name() + ":" + nickName + " : " + content, nickName);
                             break;
                     }
@@ -134,5 +141,11 @@ public class Server {
                 }
             }
         }
+        
+        //true = 1대1채팅
+        private boolean isOneToOneRoom(int roomId) {
+        	System.out.println(chattingDAO.isRoomExistById(roomId));
+			return chattingDAO.isRoomExistById(roomId);
+		}
     }
 }
