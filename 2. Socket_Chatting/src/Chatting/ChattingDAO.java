@@ -17,7 +17,7 @@ public class ChattingDAO {
 
 			// 1) 채팅방 생성
 			String sql = ""
-					+ "INSERT INTO CHATTINGROOM (CHATTINGROOM_ID, ROOMNAME, UNAME1, UNAME2) VALUES (CHATTINGROOM_ID.NEXTVAL, ?, ?, ?)";
+					+ "INSERT INTO CHATTINGROOM (CHATTINGROOM_ID, ROOMNAME, UNAME1, UNAME2) VALUES (CHATTINGROOM_SEQ.NEXTVAL, ?, ?, ?)";
 			pstmt = conn.prepareStatement(sql, new String[] { "CHATTINGROOM_ID" });
 			pstmt.setString(1, roomName);
 			pstmt.setInt(2, inviterId);
@@ -34,7 +34,7 @@ public class ChattingDAO {
 
 			// 2) 채팅 리스트에 등록
 			String listSql = "" + "INSERT INTO CHATTINGLIST " + "  (CHATTINGLIST_ID, CHATTINGROOM_ID, UNAME1, UNAME2) "
-					+ "VALUES (CHATTINGLIST_ID.NEXTVAL, ?, ?, ?)";
+					+ "VALUES (CHATTINGLIST_SEQ.NEXTVAL, ?, ?, ?)";
 			pstmt = conn.prepareStatement(listSql);
 			pstmt.setInt(1, chattingRoomId);
 			pstmt.setInt(2, inviterId);
@@ -201,51 +201,39 @@ public class ChattingDAO {
 	}
 
 	public boolean DeleteRoom(int userId, int roomId) {
-		Connection conn = null;
-		PreparedStatement delListStmt = null;
-		PreparedStatement delRoomStmt = null;
-		boolean isSuccess = false;
+	    Connection conn = null;
+	    PreparedStatement delRoomStmt = null;
+	    boolean isSuccess = false;
 
-		try {
-			conn = Jdbc_Util.getConnection();
-			conn.setAutoCommit(false);
-			String delListSql = "DELETE FROM CHATTINGLIST " + "WHERE CHATTINGROOM_ID = ? "
-					+ "  AND (UNAME1 = ? OR UNAME2 = ?)";
-			delListStmt = conn.prepareStatement(delListSql);
-			delListStmt.setInt(1, roomId);
-			delListStmt.setInt(2, userId);
-			delListStmt.setInt(3, userId);
-			int listDeleted = delListStmt.executeUpdate();
+	    try {
+	        conn = Jdbc_Util.getConnection();
+	        conn.setAutoCommit(false);
 
-			String delRoomSql = "DELETE FROM CHATTINGROOM " + "WHERE CHATTINGROOM_ID = ?";
-			delRoomStmt = conn.prepareStatement(delRoomSql);
-			delRoomStmt.setInt(1, roomId);
-			int roomDeleted = delRoomStmt.executeUpdate();
+	        // 채팅방 삭제 (ON DELETE CASCADE로 LIST와 MESSAGE 자동 삭제)
+	        String delRoomSql = "DELETE FROM CHATTINGROOM WHERE CHATTINGROOM_ID = ? AND (UNAME1 = ? OR UNAME2 = ?)";
+	        delRoomStmt = conn.prepareStatement(delRoomSql);
+	        delRoomStmt.setInt(1, roomId);
+	        delRoomStmt.setInt(2, userId);
+	        delRoomStmt.setInt(3, userId);
+	        int roomDeleted = delRoomStmt.executeUpdate();
 
-			conn.commit();
-			isSuccess = (listDeleted > 0 && roomDeleted > 0);
+	        conn.commit();
+	        isSuccess = roomDeleted > 0;
 
-			if (isSuccess == true) {
-				System.out.println("채팅방 삭제 완료");
-			} else {
-				System.out.println("채팅방 삭제 실패");
-			}
+	    } catch (SQLException e) {
+	        try {
+	            if (conn != null) conn.rollback();
+	        } catch (SQLException ex) {
+	            ex.printStackTrace();
+	        }
+	        e.printStackTrace();
+	    } finally {
+	        Jdbc_Util.close(conn, delRoomStmt);
+	    }
 
-		} catch (SQLException e) {
-			try {
-				if (conn != null)
-					conn.rollback();
-			} catch (SQLException ex) {
-				ex.printStackTrace();
-			}
-			e.printStackTrace();
-		} finally {
-			Jdbc_Util.close(conn, delListStmt);
-			Jdbc_Util.close(null, delRoomStmt);
-		}
-
-		return isSuccess;
+	    return isSuccess;
 	}
+
 
 	// 유저 아이디
 	public boolean checkRoomInUser(int roomId, int userId) {

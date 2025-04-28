@@ -7,67 +7,67 @@ import java.util.Map;
 public class MultiChattingDAO {
 
 	public int createMultiChatRoomandList(String roomName, Map<Integer, Integer> userIds) {
-	    int roomId = -1;
-	    String insertRoomSql = "INSERT INTO MULTICHATTINGROOM (" +
-	            "MULTICHATTINGROOM_ID, MULTIROOMNAME, PARTICIPANT1_ID, PARTICIPANT2_ID, " +
-	            "PARTICIPANT3_ID, PARTICIPANT4_ID, PARTICIPANT5_ID) " +
-	            "VALUES (CHATTINGROOM_ID.NEXTVAL, ?, ?, ?, ?, ?, ?)";
+		int roomId = -1;
+		String insertRoomSql = "INSERT INTO MULTICHATTINGROOM ("
+				+ "MULTICHATTINGROOM_ID, MULTIROOMNAME, PARTICIPANT1_ID, PARTICIPANT2_ID, "
+				+ "PARTICIPANT3_ID, PARTICIPANT4_ID, PARTICIPANT5_ID) "
+				+ "VALUES (CHATTINGROOM_SEQ.NEXTVAL, ?, ?, ?, ?, ?, ?)";
 
-	    String insertListSql = "INSERT INTO MULTICHATTINGLIST (" +
-	            "MULTICHATTINGLIST_ID, MULTICHATTINGROOM_ID, ID) " +
-	            "VALUES (MULTICHATTINGLIST_SEQ.NEXTVAL, ?, ?)";
+		String insertListSql = "INSERT INTO MULTICHATTINGLIST (" + "MULTICHATTINGLIST_ID, MULTICHATTINGROOM_ID, ID) "
+				+ "VALUES (MULTICHATTINGLIST_SEQ.NEXTVAL, ?, ?)";
 
-	    try (Connection conn = Jdbc_Util.getConnection();
-	         PreparedStatement pstmtRoom = conn.prepareStatement(insertRoomSql, new String[]{"MULTICHATTINGROOM_ID"});
-	         PreparedStatement pstmtList = conn.prepareStatement(insertListSql)) {
+		try (Connection conn = Jdbc_Util.getConnection();
+				PreparedStatement pstmtRoom = conn.prepareStatement(insertRoomSql,
+						new String[] { "MULTICHATTINGROOM_ID" });
+				PreparedStatement pstmtList = conn.prepareStatement(insertListSql)) {
 
-	        conn.setAutoCommit(false);
+			conn.setAutoCommit(false);
 
-	        // 1) 방 이름 설정
-	        pstmtRoom.setString(1, roomName);
+			// 1) 방 이름 설정
+			pstmtRoom.setString(1, roomName);
 
-	        // 2) PARTICIPANT 컬럼에 사용자 ID 채우기
-	        for (int slot = 1; slot <= 5; slot++) {
-	            Integer uid = userIds.get(slot);
-	            if (uid != null) {
-	                pstmtRoom.setInt(slot + 1, uid);
-	            } else {
-	                pstmtRoom.setNull(slot + 1, Types.INTEGER);
-	            }
-	        }
+			// 2) PARTICIPANT 컬럼에 사용자 ID 채우기
+			for (int slot = 1; slot <= 5; slot++) {
+				Integer uid = userIds.get(slot);
+				if (uid != null) {
+					pstmtRoom.setInt(slot + 1, uid);
+				} else {
+					pstmtRoom.setNull(slot + 1, Types.INTEGER);
+				}
+			}
 
-	        // 3) 회원 존재 여부 검증
-	        for (Integer uid : userIds.values()) {
-	            if (!isMemberExist(uid)) {
-	                throw new IllegalArgumentException("존재하지 않는 회원 ID: " + uid);
-	            }
-	        }
+			// 3) 회원 존재 여부 검증
+			for (Integer uid : userIds.values()) {
+				if (!isMemberExist(uid)) {
+					throw new IllegalArgumentException("존재하지 않는 회원 ID: " + uid);
+				}
+			}
 
-	        // 4) 방 INSERT 실행
-	        pstmtRoom.executeUpdate();
-	        try (ResultSet rs = pstmtRoom.getGeneratedKeys()) {
-	            if (rs.next()) {
-	                roomId = rs.getInt(1);
-	            }
-	        }
+			// 4) 방 INSERT 실행
+			pstmtRoom.executeUpdate();
+			try (ResultSet rs = pstmtRoom.getGeneratedKeys()) {
+				if (rs.next()) {
+					roomId = rs.getInt(1);
+				}
+			}
 
-	        // 5) MULTICHATTINGLIST에 참가자 추가
-	        for (Integer uid : userIds.values()) {
-	            pstmtList.setInt(1, roomId);
-	            pstmtList.setInt(2, uid);
-	            pstmtList.executeUpdate();
-	        }
+			// 5) MULTICHATTINGLIST에 참가자 추가
+			for (Integer uid : userIds.values()) {
+				pstmtList.setInt(1, roomId);
+				pstmtList.setInt(2, uid);
+				System.out.println("uid" + uid);
+				pstmtList.executeUpdate();
+			}
 
-	        conn.commit();
-	        System.out.println("멀티채팅방 및 참가자 목록 생성 완료! 방 ID: " + roomId);
+			conn.commit();
+			System.out.println("멀티채팅방 및 참가자 목록 생성 완료! 방 ID: " + roomId);
 
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    }
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-	    return roomId;
+		return roomId;
 	}
-
 
 	// 채팅 메시지 보내기
 	public boolean sendMessageToMultiChatRoom(int roomId, int senderId, String content) {
@@ -107,37 +107,35 @@ public class MultiChattingDAO {
 
 	// 유저
 	public boolean isUserInMultiRoom(int roomId, int userId) {
-	    Connection conn = null;
-	    PreparedStatement pstmt = null;
-	    ResultSet rs = null;
-	    boolean isCheck = false;
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		boolean isCheck = false;
 
-	    try {
-	        conn = Jdbc_Util.getConnection();
-	        String sql = "SELECT COUNT(*) FROM MULTICHATTINGROOM "
-	                   + "WHERE MULTICHATTINGROOM_ID = ? "
-	                   + "AND (PARTICIPANT1_ID = ? OR PARTICIPANT2_ID = ? "
-	                   + "OR PARTICIPANT3_ID = ? OR PARTICIPANT4_ID = ? OR PARTICIPANT5_ID = ?)";
-	        pstmt = conn.prepareStatement(sql);
-	        pstmt.setInt(1, roomId);
-	        for (int i = 2; i <= 6; i++) {
-	            pstmt.setInt(i, userId);
-	        }
+		try {
+			conn = Jdbc_Util.getConnection();
+			String sql = "SELECT COUNT(*) FROM MULTICHATTINGROOM " + "WHERE MULTICHATTINGROOM_ID = ? "
+					+ "AND (PARTICIPANT1_ID = ? OR PARTICIPANT2_ID = ? "
+					+ "OR PARTICIPANT3_ID = ? OR PARTICIPANT4_ID = ? OR PARTICIPANT5_ID = ?)";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, roomId);
+			for (int i = 2; i <= 6; i++) {
+				pstmt.setInt(i, userId);
+			}
 
-	        rs = pstmt.executeQuery();
-	        if (rs.next() && rs.getInt(1) > 0) {
-	            isCheck = true;
-	        }
+			rs = pstmt.executeQuery();
+			if (rs.next() && rs.getInt(1) > 0) {
+				isCheck = true;
+			}
 
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    } finally {
-	        Jdbc_Util.close(conn, pstmt, rs);
-	    }
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			Jdbc_Util.close(conn, pstmt, rs);
+		}
 
-	    return isCheck;
+		return isCheck;
 	}
-
 
 	// 방 나가기
 	public boolean exitMultiChatRoom(int roomId, int userId) {
@@ -153,7 +151,7 @@ public class MultiChattingDAO {
 			conn.setAutoCommit(false);
 
 			// 1) 참가자 삭제
-			String delSql = "DELETE FROM MULTICHATTINGLIST WHERE MULTICHATTINGROOM_ID = ? AND UID = ?";
+			String delSql = "DELETE FROM MULTICHATTINGLIST WHERE MULTICHATTINGROOM_ID = ? AND ID = ?";
 			delList = conn.prepareStatement(delSql);
 			delList.setInt(1, roomId);
 			delList.setInt(2, userId);
@@ -161,7 +159,21 @@ public class MultiChattingDAO {
 			delList.close();
 
 			if (removed > 0) {
-				// 2) 남은 참가자 수 확인
+				String updateParticipantSql = "UPDATE MULTICHATTINGROOM "
+						+ "SET PARTICIPANT1_ID = CASE WHEN PARTICIPANT1_ID = ? THEN NULL ELSE PARTICIPANT1_ID END, "
+						+ "    PARTICIPANT2_ID = CASE WHEN PARTICIPANT2_ID = ? THEN NULL ELSE PARTICIPANT2_ID END, "
+						+ "    PARTICIPANT3_ID = CASE WHEN PARTICIPANT3_ID = ? THEN NULL ELSE PARTICIPANT3_ID END, "
+						+ "    PARTICIPANT4_ID = CASE WHEN PARTICIPANT4_ID = ? THEN NULL ELSE PARTICIPANT4_ID END, "
+						+ "    PARTICIPANT5_ID = CASE WHEN PARTICIPANT5_ID = ? THEN NULL ELSE PARTICIPANT5_ID END "
+						+ "WHERE MULTICHATTINGROOM_ID = ?";
+				try (PreparedStatement updateParticipant = conn.prepareStatement(updateParticipantSql)) {
+					for (int i = 1; i <= 5; i++) {
+						updateParticipant.setInt(i, userId);
+					}
+					updateParticipant.setInt(6, roomId);
+					updateParticipant.executeUpdate();
+				}
+
 				String countSql = "SELECT COUNT(*) FROM MULTICHATTINGLIST WHERE MULTICHATTINGROOM_ID = ?";
 				countStmt = conn.prepareStatement(countSql);
 				countStmt.setInt(1, roomId);
@@ -172,7 +184,6 @@ public class MultiChattingDAO {
 				rs.close();
 				countStmt.close();
 
-				// 3) 0명인 경우 방 삭제
 				if (cnt == 0) {
 					String roomDelSql = "DELETE FROM MULTICHATTINGROOM WHERE MULTICHATTINGROOM_ID = ?";
 					delRoom = conn.prepareStatement(roomDelSql);
@@ -183,7 +194,7 @@ public class MultiChattingDAO {
 
 				conn.commit();
 				success = true;
-				System.out.println("[멀티] 방 나가기 완료" + (cnt == 0 ? " (방이 비어 삭제됨)" : ""));
+				System.out.println("[멀티] 방 나가기 완료" + (cnt == 0 ? " (방이 비어 삭제됨 - 메시지 자동 삭제)" : ""));
 			} else {
 				conn.rollback();
 				System.out.println("[멀티] 방에 참가 중인 사용자가 아닙니다.");
@@ -195,7 +206,7 @@ public class MultiChattingDAO {
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
-			e.printStackTrace();	
+			e.printStackTrace();
 		} finally {
 			Jdbc_Util.close(null, delRoom);
 			Jdbc_Util.close(null, countStmt);
