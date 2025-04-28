@@ -44,7 +44,9 @@ public class Server {
         DataOutputStream out;
         String nickName;
         int roomId;
+        int userKey;
         ChattingDAO chattingDAO = new ChattingDAO();
+        MultiChattingDAO multiChattingDAO = new MultiChattingDAO();
         LoginUserInfo loginUser = LoginUserInfo.getInstance();
 
         public ServerReceiver(Socket socket) {
@@ -62,8 +64,9 @@ public class Server {
             try {
                 nickName = in.readUTF();
                 roomId = in.readInt();
+                userKey = in.readInt();
 
-                if (!chattingDAO.checkRoomInUser(roomId, loginUser.getKey())) {
+                if (!chattingDAO.checkRoomInUser(roomId, userKey)&&!multiChattingDAO.isUserInMultiRoom(roomId, userKey)) {
                     out.writeUTF(ServerMessageType.NO_ROOM.name());
                     return;
                 }

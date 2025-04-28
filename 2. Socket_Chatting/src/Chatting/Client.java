@@ -20,6 +20,7 @@ public class Client {
 
             // 닉네임과 방 ID 전송
             out.writeUTF(LoginUserInfo.getInstance().getNickName());
+            out.writeInt(LoginUserInfo.getInstance().getKey());
             out.writeInt(new ChattingService().selectRoomId);
 
             // 서버 응답 받기

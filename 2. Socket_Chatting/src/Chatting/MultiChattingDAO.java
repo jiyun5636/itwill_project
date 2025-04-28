@@ -93,36 +93,37 @@ public class MultiChattingDAO {
 
 	// 유저
 	public boolean isUserInMultiRoom(int roomId, int userId) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		boolean isCheck = false;
+	    Connection conn = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+	    boolean isCheck = false;
 
-		try {
-			conn = Jdbc_Util.getConnection();
-			String sql = "";
-			sql += "SELECT COUNT(*) FROM MULTICHATTINGLIST ";
-			sql += "WHERE MULTICHATTINGROOM_ID = ? AND UID = ? ";
+	    try {
+	        conn = Jdbc_Util.getConnection();
+	        String sql = "SELECT COUNT(*) FROM MULTICHATTINGROOM "
+	                   + "WHERE MULTICHATTINGROOM_ID = ? "
+	                   + "AND (PARTICIPANT1_ID = ? OR PARTICIPANT2_ID = ? "
+	                   + "OR PARTICIPANT3_ID = ? OR PARTICIPANT4_ID = ? OR PARTICIPANT5_ID = ?)";
+	        pstmt = conn.prepareStatement(sql);
+	        pstmt.setInt(1, roomId);
+	        for (int i = 2; i <= 6; i++) {
+	            pstmt.setInt(i, userId);
+	        }
 
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setInt(1, roomId);
-			pstmt.setInt(2, userId);
+	        rs = pstmt.executeQuery();
+	        if (rs.next() && rs.getInt(1) > 0) {
+	            isCheck = true;
+	        }
 
-			rs = pstmt.executeQuery();
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    } finally {
+	        Jdbc_Util.close(conn, pstmt, rs);
+	    }
 
-			if (rs.next() && rs.getInt(1) > 0) {
-				isCheck = true;
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-
-		} finally {
-			Jdbc_Util.close(conn, pstmt, rs);
-		}
-
-		return isCheck;
+	    return isCheck;
 	}
+
 
 	// 방 나가기
 	public boolean exitMultiChatRoom(int roomId, int userId) {
