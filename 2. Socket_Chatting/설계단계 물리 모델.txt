@@ -1,0 +1,33 @@
+-- 1. 유저 테이블
+CREATE TABLE User (
+    UID NUMBER PRIMARY KEY,
+    Name VARCHAR2(50) NOT NULL,
+    NickName VARCHAR2(50) UNIQUE NOT NULL,
+    Pw VARCHAR2(100) NOT NULL
+);
+
+-- 2. 채팅룸 테이블
+CREATE TABLE ChattingRoom (
+    ChattingRoom_ID NUMBER PRIMARY KEY,
+    ChattingName VARCHAR2(100) NOT NULL
+);
+
+-- 3. 채팅리스트 테이블 (유저-채팅방 연결)
+CREATE TABLE ChattingList (
+    ChattingList_ID NUMBER PRIMARY KEY,
+    UID NUMBER NOT NULL,
+    ChattingRoom_ID NUMBER NOT NULL,
+    FOREIGN KEY (UID) REFERENCES User(UID),
+    FOREIGN KEY (ChattingRoom_ID) REFERENCES ChattingRoom(ChattingRoom_ID)
+);
+
+-- 4. 채팅메시지 테이블
+CREATE TABLE ChattingMessage (
+    ChattingMessage_ID NUMBER PRIMARY KEY,
+    UID NUMBER NOT NULL,
+    ChattingRoom_ID NUMBER NOT NULL,
+    Content VARCHAR2(500),
+    Date DATE DEFAULT SYSDATE,
+    FOREIGN KEY (UID) REFERENCES User(UID),
+    FOREIGN KEY (ChattingRoom_ID) REFERENCES ChattingRoom(ChattingRoom_ID)
+);
