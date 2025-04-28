@@ -22,7 +22,11 @@ public class ChattingService {
 
 		System.out.println("초대할 유저의 닉네임을 입력해주세요.");
 		String inviteUserNickName = strSc.nextLine();
-		//if(userDAO.findUserIdByName(inviteUserNickName))
+		
+		if(!userDAO.userExistByNickName(inviteUserNickName)) {
+			System.out.println("유저가 존재하지 않습니다.");
+			return;
+		}
 
 		int inviteUserId = userDAO.findUserIdByName(inviteUserNickName);
 
@@ -96,10 +100,16 @@ public class ChattingService {
 			inviteUserNickName[i] = strSc.nextLine();
 			
 			if(inviteUserNickName[i].equals("끝")) {
-				if(inviteUserNickName[1]==null) {
+				if(inviteUserNickName[2]==null) {
 					System.out.println("최소 1명은 초대해야합니다.");
 				}
 				break;
+			}
+			
+			if(!userDAO.userExistByNickName(inviteUserNickName[i])) {
+				System.out.println("유저가 존재하지 않습니다.");
+				i--;
+				continue;
 			}
 			
 			inviteUserKey[i]=userDAO.findUserIdByName(inviteUserNickName[i]);

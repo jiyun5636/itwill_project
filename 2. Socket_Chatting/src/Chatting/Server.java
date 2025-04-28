@@ -67,8 +67,11 @@ public class Server {
                 userKey = in.readInt();
                 roomId = in.readInt();
 
-                if (chattingDAO.checkRoomInUser(roomId, userKey)&&multiChattingDAO.isUserInMultiRoom(roomId, userKey)) {
-                	out.writeUTF(ServerMessageType.NO_ROOM.name());
+                boolean isOneToOne = chattingDAO.checkRoomInUser(roomId, userKey);
+                boolean isMulti = multiChattingDAO.isUserInMultiRoom(roomId, userKey);
+
+                if (!isOneToOne && !isMulti) {
+                    out.writeUTF(ServerMessageType.NO_ROOM.name());
                     return;
                 }
 
@@ -144,7 +147,6 @@ public class Server {
         
         //true = 1대1채팅
         private boolean isOneToOneRoom(int roomId) {
-        	System.out.println(chattingDAO.isRoomExistById(roomId));
 			return chattingDAO.isRoomExistById(roomId);
 		}
     }

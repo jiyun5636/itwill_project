@@ -63,9 +63,10 @@ public class Main {
 			case 8:
 				System.out.println("종료되었습니다.");
 				System.exit(0);
-
+				
 			default:
 				System.out.println("잘못된 번호를 입력하였습니다.");
+				break;
 			}
 		}
 

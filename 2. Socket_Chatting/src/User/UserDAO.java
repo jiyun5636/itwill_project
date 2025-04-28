@@ -210,17 +210,17 @@ public class UserDAO {
 
 	}
 	
-	public boolean userExistById(int userId) {
-	    Connection conn   = null;
+	public boolean userExistByNickName(String nickName) {
+	    Connection conn = null;
 	    PreparedStatement pstmt = null;
-	    ResultSet rs      = null;
-	    boolean isExist   = false;
+	    ResultSet rs = null;
+	    boolean isExist = false;
 
 	    try {
 	        conn = Jdbc_Util.getConnection();
-	        String sql = "SELECT COUNT(*) AS CNT FROM MEMBER WHERE ID = ?";
+	        String sql = "SELECT COUNT(*) AS CNT FROM MEMBER WHERE NICKNAME = ?";
 	        pstmt = conn.prepareStatement(sql);
-	        pstmt.setInt(1, userId);
+	        pstmt.setString(1, nickName);
 
 	        rs = pstmt.executeQuery();
 	        if (rs.next()) {
@@ -229,11 +229,11 @@ public class UserDAO {
 	    } catch (SQLException e) {
 	        e.printStackTrace();
 	    } finally {
-	        // ResultSet까지 모두 닫습니다.
 	        Jdbc_Util.close(conn, pstmt, rs);
 	    }
 
 	    return isExist;
 	}
+
 
 }
