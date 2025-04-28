@@ -163,8 +163,6 @@ public class UserDAO {
 			pstmt.setString(3, loginUserInfo.getPassword());
 			pstmt.setInt(4, loginUserInfo.getKey());
 
-			System.out.println(loginUserInfo.toString());
-
 			int result = pstmt.executeUpdate();
 			if (result > 0) {
 				System.out.println(result);
@@ -211,4 +209,31 @@ public class UserDAO {
 		return userId;
 
 	}
+	
+	public boolean userExistById(int userId) {
+	    Connection conn   = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs      = null;
+	    boolean isExist   = false;
+
+	    try {
+	        conn = Jdbc_Util.getConnection();
+	        String sql = "SELECT COUNT(*) AS CNT FROM MEMBER WHERE ID = ?";
+	        pstmt = conn.prepareStatement(sql);
+	        pstmt.setInt(1, userId);
+
+	        rs = pstmt.executeQuery();
+	        if (rs.next()) {
+	            isExist = rs.getInt("CNT") > 0;
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    } finally {
+	        // ResultSet까지 모두 닫습니다.
+	        Jdbc_Util.close(conn, pstmt, rs);
+	    }
+
+	    return isExist;
+	}
+
 }

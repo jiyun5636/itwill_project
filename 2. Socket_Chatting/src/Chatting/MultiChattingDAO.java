@@ -6,53 +6,54 @@ import java.util.Map;
 
 public class MultiChattingDAO {
 
-    public int createMultiChatRoomandList(String roomName, Map<Integer, Integer> userIds) {
-        int roomId = -1;
-        String sql =
-            "INSERT INTO MULTICHATTINGROOM (" +
-            "  MULTICHATTINGROOM_ID, MULTIROOMNAME," +
-            "  PARTICIPANT1_ID, PARTICIPANT2_ID, PARTICIPANT3_ID," +
-            "  PARTICIPANT4_ID, PARTICIPANT5_ID" +
-            ") VALUES (" +
-            "  MULTICHATTINGROOM_SEQ.NEXTVAL, ?, ?, ?, ?, ?, ?" +
-            ")";
+	public int createMultiChatRoomandList(String roomName, Map<Integer, Integer> userIds) {
+		int roomId = -1;
+		String sql = "INSERT INTO MULTICHATTINGROOM (" + "  MULTICHATTINGROOM_ID, MULTIROOMNAME,"
+				+ "  PARTICIPANT1_ID, PARTICIPANT2_ID, PARTICIPANT3_ID," + "  PARTICIPANT4_ID, PARTICIPANT5_ID"
+				+ ") VALUES (" + "  MULTICHATTINGROOM_SEQ.NEXTVAL, ?, ?, ?, ?, ?, ?" + ")";
 
-        try (Connection conn = Jdbc_Util.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql, new String[] { "MULTICHATTINGROOM_ID" })) {
+		try (Connection conn = Jdbc_Util.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql, new String[] { "MULTICHATTINGROOM_ID" })) {
+			conn.setAutoCommit(false);
 
-            conn.setAutoCommit(false);
+			// 1) 방 이름 설정
+			pstmt.setString(1, roomName);
 
-            // 1) 방 이름 설정
-            pstmt.setString(1, roomName);
+			// 2) PARTICIPANT 컬럼에 사용자 ID 채우기 (모자란 칸은 NULL 처리)
+			for (int slot = 1; slot <= 5; slot++) {
+				Integer uid = userIds.get(slot);
+				if (uid != null) {
+					pstmt.setInt(slot + 1, uid);
+				} else {
+					pstmt.setNull(slot + 1, Types.INTEGER);
+				}
+			}
 
-            // 2) PARTICIPANT 컬럼에 사용자 ID 채우기 (모자란 칸은 NULL 처리)
-            for (int slot = 1; slot <= 5; slot++) {
-                Integer uid = userIds.get(slot);
-                if (uid != null) {
-                    pstmt.setInt(slot + 1, uid);
-                } else {
-                    pstmt.setNull(slot + 1, Types.INTEGER);
-                }
-            }
+			// 3) MEMBER 테이블에 실제 존재하는 ID인지 검증
+			for (Integer uid : userIds.values()) {
+				if (!isMemberExist(uid)) {
+					throw new IllegalArgumentException("존재하지 않는 회원 ID: " + uid);
+				}
+			}
 
-            // 3) 실행 및 생성된 키 가져오기
-            pstmt.executeUpdate();
-            try (ResultSet rs = pstmt.getGeneratedKeys()) {
-                if (rs.next()) {
-                    roomId = rs.getInt(1);
-                }
-            }
+			// 4) 실행 및 생성된 키 가져오기
+			pstmt.executeUpdate();
+			try (ResultSet rs = pstmt.getGeneratedKeys()) {
+				if (rs.next()) {
+					roomId = rs.getInt(1);
+				}
+			}
 
-            conn.commit();
-            System.out.println("멀티채팅방 생성 완료! 방 ID: " + roomId);
+			conn.commit();
+			System.out.println("멀티채팅방 생성 완료! 방 ID: " + roomId);
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-            // 필요 시 rollback 처리
-        }
+		} catch (SQLException e) {
+			e.printStackTrace();
+			// 필요 시 rollback 처리
+		}
 
-        return roomId;
-    }
+		return roomId;
+	}
 
 	// 채팅 메시지 보내기
 	public boolean sendMessageToMultiChatRoom(int roomId, int senderId, String content) {
@@ -186,5 +187,15 @@ public class MultiChattingDAO {
 			Jdbc_Util.close(conn, delList, rs);
 		}
 		return success;
+	}
+
+	private boolean isMemberExist(int userId) throws SQLException {
+		String sql = "SELECT COUNT(*) FROM MEMBER WHERE ID = ?";
+		try (Connection conn = Jdbc_Util.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setInt(1, userId);
+			try (ResultSet rs = ps.executeQuery()) {
+				return rs.next() && rs.getInt(1) > 0;
+			}
+		}
 	}
 }

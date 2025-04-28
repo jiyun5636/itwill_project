@@ -69,11 +69,16 @@ public class ChattingDAO {
 			conn = Jdbc_Util.getConnection();
 
 			// 1:1 채팅방 조회
-			String sqlSingle = "" + "SELECT C.CHATTINGROOM_ID, C.ROOMNAME, "
-					+ "CASE WHEN L.UNAME1 = ? THEN U2.NICKNAME ELSE U1.NICKNAME END AS OPPONENT_NICKNAME "
-					+ "FROM CHATTINGROOM C " + "JOIN CHATTINGLIST L ON C.CHATTINGROOM_ID = L.CHATTINGROOM_ID "
-					+ "JOIN MEMBER U1 ON L.UNAME1 = U1.ID " + "JOIN MEMBER U2 ON L.UNAME2 = U2.ID "
-					+ "WHERE L.UNAME1 = ? OR L.UNAME2 = ?" + "ORDER BY C.CHATTINGROOM_ID";
+		    String sqlSingle =
+		            "SELECT C.CHATTINGROOM_ID, C.ROOMNAME, " +
+		            "       CASE WHEN L.UNAME1 = ? THEN U2.NICKNAME ELSE U1.NICKNAME END AS OPPONENT_NICKNAME " +
+		            "FROM CHATTINGROOM C " +
+		            "JOIN CHATTINGLIST  L ON C.CHATTINGROOM_ID = L.CHATTINGROOM_ID " +
+		            "JOIN MEMBER U1    ON L.UNAME1 = U1.ID " +
+		            "JOIN MEMBER U2    ON L.UNAME2 = U2.ID " +
+		            "WHERE L.UNAME1 = ? OR L.UNAME2 = ? " + 
+		            "ORDER BY C.CHATTINGROOM_ID"; 
+		    
 			pstmt = conn.prepareStatement(sqlSingle);
 			pstmt.setInt(1, userId);
 			pstmt.setInt(2, userId);
@@ -133,7 +138,7 @@ public class ChattingDAO {
 			sql += "FROM CHATMESSAGE M ";
 			sql += "JOIN MEMBER U ON M.UNAME1 = U.ID ";
 			sql += "WHERE M.CHATTINGROOM_ID = ? ";
-			sql += "AND M.REGDATE >= SYSDATE - 1/24 ";
+			sql += "AND M.REGDATE ";
 			sql += "ORDER BY M.REGDATE";
 
 			pstmt = conn.prepareStatement(sql);
@@ -302,6 +307,6 @@ public class ChattingDAO {
 			Jdbc_Util.close(conn, pstmt, rs);
 		}
 		
-		return false;
+		return isExist;
 	}
 }
