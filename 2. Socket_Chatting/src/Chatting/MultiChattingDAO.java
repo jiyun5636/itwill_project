@@ -55,7 +55,6 @@ public class MultiChattingDAO {
 			for (Integer uid : userIds.values()) {
 				pstmtList.setInt(1, roomId);
 				pstmtList.setInt(2, uid);
-				System.out.println("uid" + uid);
 				pstmtList.executeUpdate();
 			}
 
@@ -105,6 +104,46 @@ public class MultiChattingDAO {
 		return isSuccess;
 	}
 
+	public void showMultiMessagesByRoomId(int roomId) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try {
+			conn = Jdbc_Util.getConnection();
+			String sql = "";
+
+			sql += "SELECT MULTICHATTINGMESSAGE_ID , U.NICKNAME , M.CONTENT , M.REGDATE ";
+			sql += "FROM MULTICHATMESSAGE M ";
+			sql += "JOIN MEMBER U ON M.UNAME1 = U.ID ";
+			sql += "WHERE M.MULTICHATTINGROOM_ID = ? ";
+			sql += "AND M.REGDATE >= SYSDATE - 1/24 ";
+			sql += "ORDER BY M.REGDATE";
+
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, roomId);
+			rs = pstmt.executeQuery();
+
+			System.out.println("===== 채팅 메시지 (방 ID : " + roomId + ") ======");
+			System.out.println("   ===== 최근 대화 내용의 1시간만 출력됩니다. =====   ");
+			while (rs.next()) {
+				int messageId = rs.getInt("CHATTINGMESSAGE_ID");
+				String sender = rs.getString("NICKNAME");
+				String content = rs.getString("CONTENT");
+				Timestamp regDate = rs.getTimestamp("REGDATE");
+
+				System.out.println("[" + regDate + "] " + sender + " : " + content);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			Jdbc_Util.close(conn, pstmt, rs);
+		}
+
+	}
+	
+	
 	// 유저
 	public boolean isUserInMultiRoom(int roomId, int userId) {
 		Connection conn = null;

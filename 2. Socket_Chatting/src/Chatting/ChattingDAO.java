@@ -138,8 +138,8 @@ public class ChattingDAO {
 			sql += "FROM CHATMESSAGE M ";
 			sql += "JOIN MEMBER U ON M.UNAME1 = U.ID ";
 			sql += "WHERE M.CHATTINGROOM_ID = ? ";
-			sql += "AND M.REGDATE - 1/24 ";
-			sql += "ORDER BY M.REGDATE";
+			sql += "AND M.REGDATE >= SYSDATE - 1/24 ";
+			sql += "ORDER BY M.REGDATE ";
 
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, roomId);
