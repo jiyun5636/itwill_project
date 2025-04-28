@@ -70,6 +70,7 @@ public class Server {
                 boolean isOneToOne = chattingDAO.checkRoomInUser(roomId, userKey);
                 boolean isMulti = multiChattingDAO.isUserInMultiRoom(roomId, userKey);
 
+                //1대1 채팅이나 그룹채팅 목록에 없는 방을 검색했을 때
                 if (!isOneToOne && !isMulti) {
                     out.writeUTF(ServerMessageType.NO_ROOM.name());
                     return;
@@ -94,14 +95,23 @@ public class Server {
                         type = ServerMessageType.valueOf(msg);
                     }
 
+                    //나가기 or 방나가기 입력했을 경우 프론트에 메시지 전송
                     switch (type) {
                         case EXIT:
                             out.writeUTF(ServerMessageType.EXIT.name());
                             return;
+                            
                         case DELETE_ROOM:
-                            chattingDAO.DeleteRoom(userKey, roomId);
+                        	if(isOneToOneRoom(roomId)) {
+                        		chattingDAO.DeleteRoom(userKey, roomId);
+                        	}
+                        	else{
+                        		multiChattingDAO.exitMultiChatRoom(roomId, userKey);
+                        	}
                             out.writeUTF(ServerMessageType.DELETE_ROOM.name());
                             return;
+                            
+                            //채팅방 타입으로 나눠서 처리해서 DB에 저장
                         case NORMAL:
                         	if(isOneToOneRoom(roomId)) {
                         		chattingDAO.sendMessage(roomId, userKey, content);

@@ -17,6 +17,10 @@ public class ChattingService {
 	static public int selectRoomId = 0;
 
 	public void makeOneToOneChatting() {
+		if(loginUser.getNickName()==null) {
+			System.out.println("로그인이 필요합니다.");
+			return;
+		}
 		System.out.println("방 이름을 설정해주세요.");
 		String roomName = strSc.nextLine();
 
@@ -48,6 +52,10 @@ public class ChattingService {
 	}
 
 	public void showAndJoinChatRooms() {
+		if(loginUser.getNickName()==null) {
+			System.out.println("로그인이 필요합니다.");
+			return;
+		}
 		int userId = loginUser.getKey();
 		chattingDAO.showAllChatRoomsByUserId(userId); // 채팅방 목록 출력
 
@@ -76,6 +84,10 @@ public class ChattingService {
 	}
 
 	public void makeGroupChatting() {
+		if(loginUser.getNickName()==null) {
+			System.out.println("로그인이 필요합니다.");
+			return;
+		}
 		System.out.println("방 이름을 설정해주세요.");
 		String roomName = strSc.nextLine();
 
@@ -95,6 +107,7 @@ public class ChattingService {
 		userInfo.put(1,loginUser.getKey());
 		groupUserInfo.put(roomName, userInfo);
 		
+		//초대할 유저 닉네임 입력
 		for (int i = 2; i <= inviteUserNickName.length; i++) {
 			System.out.print("초대할 유저 닉네임 : ");
 			inviteUserNickName[i] = strSc.nextLine();
@@ -113,13 +126,12 @@ public class ChattingService {
 			}
 			
 			inviteUserKey[i]=userDAO.findUserIdByName(inviteUserNickName[i]);
-			//초대한 사용자 key값을 뽑아서 Map에 저장 (동일 인덱스)
+			//초대한 사용자 key값을 뽑아서 Map에 저장
 			userInfo.put(i,inviteUserKey[i]);
 			groupUserInfo.put(roomName, userInfo);
 		}
-		System.out.println(groupUserInfo.toString());
-		multiChattingDAO.createMultiChatRoomandList(roomName, groupUserInfo.get(roomName));
-
+		
+		selectRoomId = multiChattingDAO.createMultiChatRoomandList(roomName, groupUserInfo.get(roomName));
 
 		// 클라이언트 스레드 실행
 		Thread clientThread = new Thread(() -> {

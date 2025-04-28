@@ -10,14 +10,19 @@ import java.util.Scanner;
 import User.LoginUserInfo;
 
 public class Client {
+	ChattingDAO chattingDAO=new ChattingDAO();
+	MultiChattingDAO multiChattingDAO = new MultiChattingDAO();
+	static final int ROOMID = ChattingService.selectRoomId;
     public void start() {
         Socket socket = null;
-
+        
+        
         try {
             socket = new Socket("192.168.18.8", 10000);
 
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             DataInputStream in = new DataInputStream(socket.getInputStream());
+            int roomId = ChattingService.selectRoomId;
 
             // 닉네임과 방 ID 전송
             out.writeUTF(LoginUserInfo.getInstance().getNickName());
@@ -33,6 +38,13 @@ public class Client {
                 return;
             }
 
+            if(isOneToOneRoom(roomId)) {
+            	chattingDAO.showMessagesByRoomId(roomId);
+            }
+            else {
+            	multiChattingDAO.showMultiMessagesByRoomId(roomId);
+            }
+            
             // 송수신 스레드 시작
             ClientSender clientSender = new ClientSender(socket, out);
             clientSender.start();
@@ -113,6 +125,7 @@ public class Client {
 
                     switch (type) {
                         case EXIT:
+                        	return;
                         case DELETE_ROOM:
                             System.out.println("채팅방이 종료되었습니다. 메인메뉴로 돌아갑니다.");
                             socket.close();
@@ -127,4 +140,8 @@ public class Client {
             }
         }
     }
+    //true = 1대1채팅
+    private boolean isOneToOneRoom(int roomId) {
+		return chattingDAO.isRoomExistById(roomId);
+	}
 }

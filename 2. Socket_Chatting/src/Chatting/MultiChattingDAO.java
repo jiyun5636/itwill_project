@@ -127,7 +127,7 @@ public class MultiChattingDAO {
 			System.out.println("===== 채팅 메시지 (방 ID : " + roomId + ") ======");
 			System.out.println("   ===== 최근 대화 내용의 1시간만 출력됩니다. =====   ");
 			while (rs.next()) {
-				int messageId = rs.getInt("CHATTINGMESSAGE_ID");
+				int messageId = rs.getInt("MULTICHATTINGMESSAGE_ID");
 				String sender = rs.getString("NICKNAME");
 				String content = rs.getString("CONTENT");
 				Timestamp regDate = rs.getTimestamp("REGDATE");

@@ -84,6 +84,7 @@ public class UserService {
 			System.out.println("=================");
 			System.out.println("1. 수정하기");
 			System.out.println("2. 탈퇴");
+			System.out.println("3. 나가기");
 			int num = intSc.nextInt();
 
 			switch (num) {
@@ -121,6 +122,8 @@ public class UserService {
 					System.out.println("잘못된 번호를 입력하셨습니다");
 				}
 				break;
+			case 3:
+				return;
 			}
 
 		} else {
