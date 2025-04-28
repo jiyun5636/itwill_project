@@ -104,6 +104,7 @@ public class Server {
                         case DELETE_ROOM:
                         	if(isOneToOneRoom(roomId)) {
                         		chattingDAO.DeleteRoom(userKey, roomId);
+                        		sendToRoom(ServerMessageType.DELETE_ROOM.name(), null);
                         	}
                         	else{
                         		multiChattingDAO.exitMultiChatRoom(roomId, userKey);
