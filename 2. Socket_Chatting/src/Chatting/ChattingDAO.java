@@ -96,7 +96,7 @@ public class ChattingDAO {
 			pstmt.close();
 
 			// 멀티채팅방 조회
-			String sqlMulti = "" + "SELECT M.MULTICHATTINGROOM_ID, M.MULTIROOMNAME, " + "COUNT(L.ID) AS USER_COUNT, "
+			String sqlMulti = "SELECT M.MULTICHATTINGROOM_ID, M.MULTIROOMNAME, " + "COUNT(L.ID) AS USER_COUNT, "
 					+ "LISTAGG(U.NICKNAME, ', ') WITHIN GROUP (ORDER BY U.NICKNAME) AS PARTICIPANTS "
 					+ "FROM MULTICHATTINGROOM M "
 					+ "JOIN MULTICHATTINGLIST L ON M.MULTICHATTINGROOM_ID = L.MULTICHATTINGROOM_ID "
@@ -138,7 +138,7 @@ public class ChattingDAO {
 			sql += "FROM CHATMESSAGE M ";
 			sql += "JOIN MEMBER U ON M.UNAME1 = U.ID ";
 			sql += "WHERE M.CHATTINGROOM_ID = ? ";
-			sql += "AND M.REGDATE ";
+			sql += "AND M.REGDATE - 1/24 ";
 			sql += "ORDER BY M.REGDATE";
 
 			pstmt = conn.prepareStatement(sql);
