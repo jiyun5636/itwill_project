@@ -73,7 +73,9 @@ public class Main {
 			}
 		}
 	}
-
+	//서버가 열려있지 않으면 처음 실행
+	//실행 후 다른 기능을 사용할 때 서버가 열려있으면 기존 서버를 그대로 사용
+	//회원 관리엔 서버 필요 X, openServer에서 검사하기 때문에 3,4,5에서 호출
 	public static void openServer() {
 		if (serverThread == null || !serverThread.isAlive()) {
 			serverThread = new Thread(() -> {

@@ -20,7 +20,7 @@ public class UserService {
 		while (true) {
 			System.out.print("닉네임을 입력하세요: ");
 			nickName = strSc.nextLine();
-			// 중복처리 추가 필요
+			// 중복처리
 			if (userDAO.isNickNameDuplicate(nickName)) {
 				System.out.println("이미 존재하는 닉네임입니다. 다시 입력하세요.");
 			} else {
